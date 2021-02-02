@@ -117,6 +117,15 @@ class InputAdapterUI:
     def button33_released(self):
         self.mocDisplay.button_released(3, 3)
 
+    def handle_button_led(self, channel, row, enabled):
+        button_name = f'button{channel}{row}'
+        button = self.centralWidget.findChild(QPushButton, button_name)
+
+        if enabled:
+            button.setStyleSheet('QPushButton {background-color: red}')
+        else:
+            button.setStyleSheet('')
+
     def __init__(self, centralWidget):
         self.mocDisplay = centralWidget.findChild(MotionControllerDisplay, "mocDisplay")
         self.centralWidget = centralWidget
@@ -211,3 +220,5 @@ class InputAdapterUI:
         button33 = self.centralWidget.findChild(QPushButton, "button33")
         button33.pressed.connect(self.button33_pressed)
         button33.released.connect(self.button33_released)
+
+        self.mocDisplay.button_led.connect(self.handle_button_led)

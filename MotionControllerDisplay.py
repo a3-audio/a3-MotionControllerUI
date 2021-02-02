@@ -10,6 +10,8 @@ from Track import PlaybackParameters
 from OpenGL import GL
 
 class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
+    button_led = Signal(int, int, bool)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -156,6 +158,9 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
     @Slot(int, int)
     def button_pressed(self, channel, row):
         print("channel " + str(channel) + " button " + str(row) + " pressed ")
+        self.button_led.emit(channel, row, True)
+
     @Slot(int, int)
     def button_released(self, channel, row):
         print("channel " + str(channel) + " button " + str(row) + " released ")
+        self.button_led.emit(channel, row, False)
