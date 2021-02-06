@@ -68,57 +68,57 @@ class InputAdapterSerial(QThread):
 
                 # Encoder
                 if identifier == "Enc0":
-                    self.mocDisplay.encoder_motion(0, step)
+                    self.encoder_motion.emit(0, step)
                 if identifier == "Enc1":
-                    self.mocDisplay.encoder_motion(1, step)
+                    self.encoder_motion.emit(1, step)
                 if identifier == "Enc2":
-                    self.mocDisplay.encoder_motion(2, step)
+                    self.encoder_motion.emit(2, step)
                 if identifier == "Enc3":
-                    self.mocDisplay.encoder_motion(3, step)
+                    self.encoder_motion.emit(3, step)
 
                 # Encoder Buttons
                 if identifier == "EB0":
-                    self.mocDisplay.encoder_pressed(0)
+                    self.encoder_pressed.emit(0)
                 if identifier == "EB1":
-                    self.mocDisplay.encoder_pressed(1)
+                    self.encoder_pressed.emit(1)
                 if identifier == "EB2":
-                    self.mocDisplay.encoder_pressed(2)
+                    self.encoder_pressed.emit(2)
                 if identifier == "EB3":
-                    self.mocDisplay.encoder_pressed(3)
+                    self.encoder_pressed.emit(3)
 
                 # Buttons
                 if identifier == "B0":
-                    self.mocDisplay.button_pressed(3,0)
+                    self.button_pressed.emit(3,0)
                 if identifier == "B1":
-                    self.mocDisplay.button_pressed(2,0)
+                    self.button_pressed.emit(2,0)
                 if identifier == "B2":
-                    self.mocDisplay.button_pressed(1,0)
+                    self.button_pressed.emit(1,0)
                 if identifier == "B3":
-                    self.mocDisplay.button_pressed(0,0)
+                    self.button_pressed.emit(0,0)
                 if identifier == "B4":
-                    self.mocDisplay.button_pressed(3,1)
+                    self.button_pressed.emit(3,1)
                 if identifier == "B5":
-                    self.mocDisplay.button_pressed(2,1)
+                    self.button_pressed.emit(2,1)
                 if identifier == "B6":
-                    self.mocDisplay.button_pressed(1,1)
+                    self.button_pressed.emit(1,1)
                 if identifier == "B7":
-                    self.mocDisplay.button_pressed(0,1)
+                    self.button_pressed.emit(0,1)
                 if identifier == "B8":
-                    self.mocDisplay.button_pressed(3,2)
+                    self.button_pressed.emit(3,2)
                 if identifier == "B9":
-                    self.mocDisplay.button_pressed(2,2)
+                    self.button_pressed.emit(2,2)
                 if identifier == "B10":
-                    self.mocDisplay.button_pressed(1,2)
+                    self.button_pressed.emit(1,2)
                 if identifier == "B11":
-                    self.mocDisplay.button_pressed(0,2)
+                    self.button_pressed.emit(0,2)
                 if identifier == "B12":
-                    self.mocDisplay.button_pressed(3,3)
+                    self.button_pressed.emit(3,3)
                 if identifier == "B13":
-                    self.mocDisplay.button_pressed(2,3)
+                    self.button_pressed.emit(2,3)
                 if identifier == "B14":
-                    self.mocDisplay.button_pressed(1,3)
+                    self.button_pressed.emit(1,3)
                 if identifier == "B15":
-                    self.mocDisplay.button_pressed(0,3)
+                    self.button_pressed.emit(0,3)
 
     def __init__(self, mocDisplay, serialDevice, baudRate):
         super(InputAdapterSerial, self).__init__()
