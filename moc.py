@@ -59,8 +59,15 @@ if __name__ == "__main__":
         window.showFullScreen()
 
     # create track objects and pass to display widget
+    tracks = []
     num_tracks = 4
-    tracks = [Track() for i in range(num_tracks)]
+    for t in range(num_tracks):
+        track = Track()
+        # evenly space tracks along circle for initialization
+        track_angle_interval = (360/num_tracks)
+        track.ambi_params.azimuth = -180 + track_angle_interval/2 + t*track_angle_interval
+        track.ambi_params.width = 25
+        tracks.append(track)
 
     mocDisplay = window.findChild(MotionControllerDisplay)
     mocDisplay.setTracks(tracks)
