@@ -1,9 +1,9 @@
 import PySide6.QtOpenGL
 
 from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
-#from PySide6.QtOpenGLFunctions import QOpenGLFunctions_4_3_Core
 from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect
 from PySide6.QtGui import QColor, QFont, QImage
+from PySide6.QtSvg import QSvgRenderer
 
 from Track import PlaybackParameters
 
@@ -26,7 +26,8 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
             'text_pad_rel_w' : 0.02,
             'text_pad_rel_h' : 0.012,
             'font_scale' : 0.015,
-            'line_spacing_rel_h' : 0.028
+            'line_spacing_rel_h' : 0.028,
+            'circle_pad_rel' : 0.2,
         }
 
         pen = QtGui.QPen()
@@ -35,7 +36,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         self.pen_outlines = pen
         self.mouse_pos = (0, 0)
 
-        self.image_orientation = QImage("resources/orientation.png")
+        self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
 
         self.tracks = None
 
@@ -90,8 +91,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         region = self.rect()
         region.adjust(0, self.draw_params_dynamic['header_height'],
                       0, -self.draw_params_dynamic['footer_height'])
-        painter.setBrush(QtCore.Qt.black)
-        painter.drawRect(region)
+        self.drawCenterRegion(painter, region)
 
     def drawTrackHeader(self, painter, track, region, color):
         painter.setBrush(QtGui.QBrush(color))
@@ -129,6 +129,23 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         playback_mode_string = track.playback_params.mode.name
         painter.drawText(text_region, "Loop: " + playback_mode_string)
+
+    def drawCenterRegion(self, painter, region):
+        painter.setBrush(QtCore.Qt.black)
+        painter.drawRect(region)
+
+        circle_region = QRect(region)
+        circle_size = min(circle_region.width(), circle_region.height())
+        circle_region.setWidth(circle_size)
+        circle_region.setHeight(circle_size)
+        circle_region.moveCenter(region.center())
+
+        orientation_size = circle_size * (1-self.draw_params['circle_pad_rel'])
+        orientation_region = QRect(circle_region)
+        orientation_region.setWidth(orientation_size)
+        orientation_region.setHeight(orientation_size)
+        orientation_region.moveCenter(region.center())
+        self.svg_render_orientation.render(painter, orientation_region)
 
     def mouseMoveEvent(self, event):
         # rel = self.abs2rel(event.x(), event.y())
