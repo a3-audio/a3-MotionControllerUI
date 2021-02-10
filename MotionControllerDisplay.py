@@ -165,10 +165,10 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
         painter.setPen(QtCore.Qt.black)
         ambi_mode_string = track.ambi_params.mode.name
-        painter.drawText(text_region, "Mode: " + ambi_mode_string)
+        painter.drawText(text_region, "Length: " + str(track.playback_params.length))
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        painter.drawText(text_region, "Length: " + str(track.playback_params.length))
+        painter.drawText(text_region, "Mode: " + ambi_mode_string)
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         playback_mode_string = track.playback_params.mode.name
