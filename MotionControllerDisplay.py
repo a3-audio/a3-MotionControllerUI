@@ -1,4 +1,5 @@
 import math
+import time
 
 import PySide6.QtOpenGL
 
@@ -31,6 +32,12 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
             'circle_pad_rel' : 0.2,
             'marker_size_rel' : 0.06,
         }
+
+        self.interaction_params = {
+            'double_press_time' : 0.250,
+        }
+
+        self.encoder_press_times = {}
 
         pen = QtGui.QPen()
         pen.setWidth(2)
@@ -196,6 +203,16 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         self.mouse_pos = (event.x(), event.y())
         self.repaint()
 
+    def detect_double_click(self, channel):
+        press_time = time.time()
+        if self.encoder_press_times.get(channel) and self.encoder_press_times[channel] + self.interaction_params['double_press_time'] >= press_time:
+            self.encoder_double_pressed(channel)
+            self.encoder_press_times.clear()
+            return True
+        else:
+            self.encoder_press_times[channel] = press_time
+        return False
+
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
@@ -209,12 +226,21 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
     @Slot(int, int)
     def encoder_motion(self, channel, direction):
         print("channel " + str(channel) + " encoder moved in direction: " + str(direction))
+
     @Slot(int)
     def encoder_pressed(self, channel):
+        if self.detect_double_click(channel):
+            return
+
         print("channel " + str(channel) + " encoder pressed ")
+
     @Slot(int)
     def encoder_released(self, channel):
         print("channel " + str(channel) + " encoder released ")
+
+    @Slot(int)
+    def encoder_double_pressed(self, channel):
+        print("channel " + str(channel) + " encoder double pressed ")
 
     @Slot(int, int)
     def button_pressed(self, channel, row):
