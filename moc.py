@@ -66,7 +66,7 @@ if __name__ == "__main__":
         # evenly space tracks along circle for initialization
         track_angle_interval = (360/num_tracks)
         track.ambi_params.azimuth = -180 + track_angle_interval/2 + t*track_angle_interval
-        track.ambi_params.width = 25
+        track.ambi_params.width = 45
         tracks.append(track)
 
     mocDisplay = window.findChild(MotionControllerDisplay)

@@ -61,7 +61,9 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
     def rel_to_abs_height(self, y):
         return y * self.height()
 
-    def azimuth_to_angle(self, azimuth):
+    def azimuth_to_deg(self, azimuth):
+        return (90-azimuth)
+    def azimuth_to_rad(self, azimuth):
         return (90-azimuth) * 2 * math.pi / 360
     def angle_to_position(self, angle):
         x = math.cos(angle) * self.draw_params_dynamic['circle_radius']
@@ -108,24 +110,25 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         painter.setBrush(QtCore.Qt.black)
         painter.drawRect(region)
 
-        circle_region = QRect(region)
-        circle_size = min(circle_region.width(), circle_region.height())
-        circle_region.setWidth(circle_size)
-        circle_region.setHeight(circle_size)
-        circle_region.moveCenter(region.center())
+        center_region = QRect(region)
+        center_size = min(center_region.width(), center_region.height())
+        center_region.setWidth(center_size)
+        center_region.setHeight(center_size)
+        center_region.moveCenter(region.center())
 
-        orientation_size = circle_size * (1-self.draw_params['circle_pad_rel'])
-        self.draw_params_dynamic['circle_radius'] = orientation_size / 2
-
-        orientation_region = QRect(circle_region)
+        orientation_size = center_size * (1-self.draw_params['circle_pad_rel'])
+        orientation_region = QRect(center_region)
         orientation_region.setWidth(orientation_size)
         orientation_region.setHeight(orientation_size)
         orientation_region.moveCenter(region.center())
         self.svg_render_orientation.render(painter, orientation_region)
 
+        self.draw_params_dynamic['circle_region'] = orientation_region
+        self.draw_params_dynamic['circle_radius'] = orientation_size / 2
+
         if self.tracks:
             for t in range(len(self.tracks)):
-                self.drawTrackCenter(painter, circle_region, self.track_colors[t], self.tracks[t])
+                self.drawTrackCenter(painter, center_region, self.track_colors[t], self.tracks[t])
 
     def drawTrackHeader(self, painter, region, color, track):
         painter.setBrush(QtGui.QBrush(color))
@@ -165,23 +168,27 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         painter.drawText(text_region, "Loop: " + playback_mode_string)
 
     def drawTrackCenter(self, painter, region, color, track):
-        painter.setBrush(QtGui.QBrush(color))
-        painter.setPen(QtCore.Qt.NoPen)
-
         marker_size = self.draw_params['marker_size_rel'] * region.width()
-        marker_angle = self.azimuth_to_angle(track.ambi_params.azimuth)
-        marker_position = region.center() + self.angle_to_position(marker_angle)
 
-        # print(str(marker_angle))
-        print(str(self.azimuth_to_angle(-180)))
+        start_angle = self.azimuth_to_deg(track.ambi_params.azimuth + track.ambi_params.width/2) * 16
+        span_angle = track.ambi_params.width * 16
+
+        pen = QtGui.QPen()
+        pen.setWidth(marker_size / 3)
+        pen.setBrush(color)
+        painter.setPen(pen)
+        painter.drawArc(self.draw_params_dynamic['circle_region'], start_angle, span_angle)
+
+        marker_angle = self.azimuth_to_rad(track.ambi_params.azimuth)
+        marker_position = region.center() + self.angle_to_position(marker_angle)
 
         marker_region = QRect()
         marker_region.setWidth(marker_size)
         marker_region.setHeight(marker_size)
         marker_region.moveCenter(marker_position)
 
-        # print(marker_region)
-
+        painter.setBrush(QtGui.QBrush(color))
+        painter.setPen(QtCore.Qt.NoPen)
         painter.drawEllipse(marker_region)
 
     def mouseMoveEvent(self, event):
