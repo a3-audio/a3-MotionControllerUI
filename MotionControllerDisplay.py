@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
 from PySide6.QtGui import QColor, QFont, QImage
 from PySide6.QtSvg import QSvgRenderer
 
-from Track import PlaybackParameters
+from Track import *
 
 from OpenGL import GL
 
@@ -39,10 +39,10 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
         self.encoder_press_times = {}
 
-        pen = QtGui.QPen()
-        pen.setWidth(2)
-        pen.setBrush(QtCore.Qt.white)
-        self.pen_outlines = pen
+        self.pen_outlines = QtGui.QPen()
+        self.pen_outlines.setWidth(5)
+        self.pen_outlines.setBrush(QtCore.Qt.red)
+
         self.mouse_pos = (0, 0)
 
         self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
@@ -156,7 +156,12 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
     def drawTrackFooter(self, painter, region, color, track):
         painter.setBrush(QtGui.QBrush(color))
-        painter.setPen(QtCore.Qt.NoPen)
+
+        if track.record_params.armed:
+            painter.setPen(self.pen_outlines)
+        else:
+            painter.setPen(QtCore.Qt.NoPen)
+
         painter.drawRect(region)
 
         text_region = QRect(region)
@@ -210,7 +215,6 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
             self.tracks[track].ambi_params.width = value*180
         if row == 1:
             self.tracks[track].ambi_params.side = value*9
-
         self.repaint()
 
     def detect_double_press(self, channel):
@@ -228,15 +232,14 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         if self.detect_double_press(channel):
             return
 
-        print("channel " + str(channel) + " encoder pressed ")
+    @Slot(int)
+    def encoder_double_pressed(self, channel):
+        self.tracks[channel].record_params.armed = not self.tracks[channel].record_params.armed
+        self.repaint()
 
     @Slot(int)
     def encoder_released(self, channel):
-        print("channel " + str(channel) + " encoder released ")
-
-    @Slot(int)
-    def encoder_double_pressed(self, channel):
-        print("channel " + str(channel) + " encoder double pressed ")
+        pass
 
     @Slot(int, int)
     def encoder_motion(self, channel, direction):
