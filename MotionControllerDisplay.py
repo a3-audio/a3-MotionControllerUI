@@ -23,8 +23,8 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
         self.draw_params = {
             'menu_stroke_width_rel_w' : 0.01,
-            'channel_top_height_rel' : 0.07,
-            'channel_bottom_height_rel' : 0.1,
+            'channel_top_height_rel' : 0.1,
+            'channel_bottom_height_rel' : 0.07,
             'text_pad_rel_w' : 0.02,
             'text_pad_rel_h' : 0.012,
             'font_scale' : 0.015,
@@ -142,11 +142,16 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
 
+        painter.setPen(QtCore.Qt.black)
+
         text_region = QRect(region)
         text_region.adjust(self.draw_params_dynamic['left_pad'],
                            self.draw_params_dynamic['top_pad'], 0, 0)
 
-        painter.setPen(QtCore.Qt.black)
+        ambi_mode_string = track.ambi_params.mode.name
+        painter.drawText(text_region, "Mode: " + ambi_mode_string)
+
+        text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         width_string = f'Width: {track.ambi_params.width:.0f}°'
         painter.drawText(text_region, width_string)
 
@@ -164,16 +169,14 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
         painter.drawRect(region)
 
+        painter.setPen(QtCore.Qt.black)
+
         text_region = QRect(region)
+
         text_region.adjust(self.draw_params_dynamic['left_pad'],
                            self.draw_params_dynamic['top_pad'], 0, 0)
 
-        painter.setPen(QtCore.Qt.black)
-        ambi_mode_string = track.ambi_params.mode.name
         painter.drawText(text_region, "Length: " + str(track.playback_params.length))
-
-        text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        painter.drawText(text_region, "Mode: " + ambi_mode_string)
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         playback_mode_string = track.playback_params.mode.name
