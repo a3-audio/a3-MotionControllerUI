@@ -1,10 +1,151 @@
-from PySide6.QtCore import SIGNAL, QObject
+from PySide6.QtCore import SIGNAL, QObject, QEvent
 from PySide6.QtWidgets import QDial, QPushButton
 
 from MotionControllerDisplay import MotionControllerDisplay
 from widgets.QuadraticDial import QuadraticDial
 
-class InputAdapterUI:
+class InputAdapterUI(QObject):
+    def __init__(self, centralWidget):
+        super().__init__()
+
+        self.mocDisplay = centralWidget.findChild(MotionControllerDisplay, "mocDisplay")
+        self.centralWidget = centralWidget
+
+        dialTop00 = self.centralWidget.findChild(QDial, "dialTop00")
+        dialTop00.valueChanged.connect(self.dialTop00_valueChanged)
+        dialTop01 = self.centralWidget.findChild(QDial, "dialTop01")
+        dialTop01.valueChanged.connect(self.dialTop01_valueChanged)
+        dialTop10 = self.centralWidget.findChild(QDial, "dialTop10")
+        dialTop10.valueChanged.connect(self.dialTop10_valueChanged)
+        dialTop11 = self.centralWidget.findChild(QDial, "dialTop11")
+        dialTop11.valueChanged.connect(self.dialTop11_valueChanged)
+        dialTop20 = self.centralWidget.findChild(QDial, "dialTop20")
+        dialTop20.valueChanged.connect(self.dialTop20_valueChanged)
+        dialTop21 = self.centralWidget.findChild(QDial, "dialTop21")
+        dialTop21.valueChanged.connect(self.dialTop21_valueChanged)
+        dialTop30 = self.centralWidget.findChild(QDial, "dialTop30")
+        dialTop30.valueChanged.connect(self.dialTop30_valueChanged)
+        dialTop31 = self.centralWidget.findChild(QDial, "dialTop31")
+        dialTop31.valueChanged.connect(self.dialTop31_valueChanged)
+
+        buttonEncoder0 = self.centralWidget.findChild(QPushButton, "buttonEncoder0")
+        buttonEncoder0.pressed.connect(self.buttonEncoder0_pressed)
+        buttonEncoder0.released.connect(self.buttonEncoder0_released)
+        buttonEncoder1 = self.centralWidget.findChild(QPushButton, "buttonEncoder1")
+        buttonEncoder1.pressed.connect(self.buttonEncoder1_pressed)
+        buttonEncoder1.released.connect(self.buttonEncoder1_released)
+        buttonEncoder2 = self.centralWidget.findChild(QPushButton, "buttonEncoder2")
+        buttonEncoder2.pressed.connect(self.buttonEncoder2_pressed)
+        buttonEncoder2.released.connect(self.buttonEncoder2_released)
+        buttonEncoder3 = self.centralWidget.findChild(QPushButton, "buttonEncoder3")
+        buttonEncoder3.pressed.connect(self.buttonEncoder3_pressed)
+        buttonEncoder3.released.connect(self.buttonEncoder3_released)
+
+        dialBottom0 = self.centralWidget.findChild(QuadraticDial, "dialBottom0")
+        dialBottom0.step.connect(self.dialBottom0_step)
+        dialBottom1 = self.centralWidget.findChild(QuadraticDial, "dialBottom1")
+        dialBottom1.step.connect(self.dialBottom1_step)
+        dialBottom2 = self.centralWidget.findChild(QuadraticDial, "dialBottom2")
+        dialBottom2.step.connect(self.dialBottom2_step)
+        dialBottom3 = self.centralWidget.findChild(QuadraticDial, "dialBottom3")
+        dialBottom3.step.connect(self.dialBottom3_step)
+
+        button00 = self.centralWidget.findChild(QPushButton, "button00")
+        button00.pressed.connect(self.button00_pressed)
+        button00.released.connect(self.button00_released)
+        button01 = self.centralWidget.findChild(QPushButton, "button01")
+        button01.pressed.connect(self.button01_pressed)
+        button01.released.connect(self.button01_released)
+        button02 = self.centralWidget.findChild(QPushButton, "button02")
+        button02.pressed.connect(self.button02_pressed)
+        button02.released.connect(self.button02_released)
+        button03 = self.centralWidget.findChild(QPushButton, "button03")
+        button03.pressed.connect(self.button03_pressed)
+        button03.released.connect(self.button03_released)
+
+        button10 = self.centralWidget.findChild(QPushButton, "button10")
+        button10.pressed.connect(self.button10_pressed)
+        button10.released.connect(self.button10_released)
+        button11 = self.centralWidget.findChild(QPushButton, "button11")
+        button11.pressed.connect(self.button11_pressed)
+        button11.released.connect(self.button11_released)
+        button12 = self.centralWidget.findChild(QPushButton, "button12")
+        button12.pressed.connect(self.button12_pressed)
+        button12.released.connect(self.button12_released)
+        button13 = self.centralWidget.findChild(QPushButton, "button13")
+        button13.pressed.connect(self.button13_pressed)
+        button13.released.connect(self.button13_released)
+
+        button20 = self.centralWidget.findChild(QPushButton, "button20")
+        button20.pressed.connect(self.button20_pressed)
+        button20.released.connect(self.button20_released)
+        button21 = self.centralWidget.findChild(QPushButton, "button21")
+        button21.pressed.connect(self.button21_pressed)
+        button21.released.connect(self.button21_released)
+        button22 = self.centralWidget.findChild(QPushButton, "button22")
+        button22.pressed.connect(self.button22_pressed)
+        button22.released.connect(self.button22_released)
+        button23 = self.centralWidget.findChild(QPushButton, "button23")
+        button23.pressed.connect(self.button23_pressed)
+        button23.released.connect(self.button23_released)
+
+        button30 = self.centralWidget.findChild(QPushButton, "button30")
+        button30.pressed.connect(self.button30_pressed)
+        button30.released.connect(self.button30_released)
+        button31 = self.centralWidget.findChild(QPushButton, "button31")
+        button31.pressed.connect(self.button31_pressed)
+        button31.released.connect(self.button31_released)
+        button32 = self.centralWidget.findChild(QPushButton, "button32")
+        button32.pressed.connect(self.button32_pressed)
+        button32.released.connect(self.button32_released)
+        button33 = self.centralWidget.findChild(QPushButton, "button33")
+        button33.pressed.connect(self.button33_pressed)
+        button33.released.connect(self.button33_released)
+
+        self.mocDisplay.button_led.connect(self.handle_button_led)
+
+        self.keyCodeMap = {
+            10: (self.button00_pressed, self.button00_released),
+            11: (self.button10_pressed, self.button10_released),
+            12: (self.button20_pressed, self.button20_released),
+            13: (self.button30_pressed, self.button30_released),
+            24: (self.button01_pressed, self.button01_released),
+            25: (self.button11_pressed, self.button11_released),
+            26: (self.button21_pressed, self.button21_released),
+            27: (self.button31_pressed, self.button31_released),
+            38: (self.button02_pressed, self.button02_released),
+            39: (self.button12_pressed, self.button12_released),
+            40: (self.button22_pressed, self.button22_released),
+            41: (self.button32_pressed, self.button32_released),
+            52: (self.button03_pressed, self.button03_released),
+            53: (self.button13_pressed, self.button13_released),
+            54: (self.button23_pressed, self.button23_released),
+            55: (self.button33_pressed, self.button33_released),
+            # 67: (self.button03_pressed, self.button03_released),
+            # 68: (self.button13_pressed, self.button13_released),
+            # 69: (self.button23_pressed, self.button23_released),
+            # 70: (self.button33_pressed, self.button33_released),
+        }
+
+
+    def eventFilter(self, obj, event):
+        is_handled = False
+        if event.type() == QEvent.KeyPress or event.type() == QEvent.KeyRelease:
+            code = event.nativeScanCode()
+            # print(str(code))
+            if code in self.keyCodeMap:
+                if not event.isAutoRepeat():
+                    if event.type() == QEvent.KeyPress:
+                        self.keyCodeMap[code][0]()
+                    else:
+                        self.keyCodeMap[code][1]()
+                is_handled = True
+
+        if not is_handled:
+            # standard event processing
+            return QObject.eventFilter(self, obj, event)
+        else:
+            return True
 
     def dialTop00_valueChanged(self, value):
         self.mocDisplay.poti_changed(0, 0, value / 1023)
@@ -125,100 +266,3 @@ class InputAdapterUI:
             button.setStyleSheet('QPushButton {background-color: red}')
         else:
             button.setStyleSheet('')
-
-    def __init__(self, centralWidget):
-        self.mocDisplay = centralWidget.findChild(MotionControllerDisplay, "mocDisplay")
-        self.centralWidget = centralWidget
-
-        dialTop00 = self.centralWidget.findChild(QDial, "dialTop00")
-        dialTop00.valueChanged.connect(self.dialTop00_valueChanged)
-        dialTop01 = self.centralWidget.findChild(QDial, "dialTop01")
-        dialTop01.valueChanged.connect(self.dialTop01_valueChanged)
-        dialTop10 = self.centralWidget.findChild(QDial, "dialTop10")
-        dialTop10.valueChanged.connect(self.dialTop10_valueChanged)
-        dialTop11 = self.centralWidget.findChild(QDial, "dialTop11")
-        dialTop11.valueChanged.connect(self.dialTop11_valueChanged)
-        dialTop20 = self.centralWidget.findChild(QDial, "dialTop20")
-        dialTop20.valueChanged.connect(self.dialTop20_valueChanged)
-        dialTop21 = self.centralWidget.findChild(QDial, "dialTop21")
-        dialTop21.valueChanged.connect(self.dialTop21_valueChanged)
-        dialTop30 = self.centralWidget.findChild(QDial, "dialTop30")
-        dialTop30.valueChanged.connect(self.dialTop30_valueChanged)
-        dialTop31 = self.centralWidget.findChild(QDial, "dialTop31")
-        dialTop31.valueChanged.connect(self.dialTop31_valueChanged)
-
-        buttonEncoder0 = self.centralWidget.findChild(QPushButton, "buttonEncoder0")
-        buttonEncoder0.pressed.connect(self.buttonEncoder0_pressed)
-        buttonEncoder0.released.connect(self.buttonEncoder0_released)
-        buttonEncoder1 = self.centralWidget.findChild(QPushButton, "buttonEncoder1")
-        buttonEncoder1.pressed.connect(self.buttonEncoder1_pressed)
-        buttonEncoder1.released.connect(self.buttonEncoder1_released)
-        buttonEncoder2 = self.centralWidget.findChild(QPushButton, "buttonEncoder2")
-        buttonEncoder2.pressed.connect(self.buttonEncoder2_pressed)
-        buttonEncoder2.released.connect(self.buttonEncoder2_released)
-        buttonEncoder3 = self.centralWidget.findChild(QPushButton, "buttonEncoder3")
-        buttonEncoder3.pressed.connect(self.buttonEncoder3_pressed)
-        buttonEncoder3.released.connect(self.buttonEncoder3_released)
-
-        dialBottom0 = self.centralWidget.findChild(QuadraticDial, "dialBottom0")
-        dialBottom0.step.connect(self.dialBottom0_step)
-        dialBottom1 = self.centralWidget.findChild(QuadraticDial, "dialBottom1")
-        dialBottom1.step.connect(self.dialBottom1_step)
-        dialBottom2 = self.centralWidget.findChild(QuadraticDial, "dialBottom2")
-        dialBottom2.step.connect(self.dialBottom2_step)
-        dialBottom3 = self.centralWidget.findChild(QuadraticDial, "dialBottom3")
-        dialBottom3.step.connect(self.dialBottom3_step)
-
-        button00 = self.centralWidget.findChild(QPushButton, "button00")
-        button00.pressed.connect(self.button00_pressed)
-        button00.released.connect(self.button00_released)
-        button01 = self.centralWidget.findChild(QPushButton, "button01")
-        button01.pressed.connect(self.button01_pressed)
-        button01.released.connect(self.button01_released)
-        button02 = self.centralWidget.findChild(QPushButton, "button02")
-        button02.pressed.connect(self.button02_pressed)
-        button02.released.connect(self.button02_released)
-        button03 = self.centralWidget.findChild(QPushButton, "button03")
-        button03.pressed.connect(self.button03_pressed)
-        button03.released.connect(self.button03_released)
-
-        button10 = self.centralWidget.findChild(QPushButton, "button10")
-        button10.pressed.connect(self.button10_pressed)
-        button10.released.connect(self.button10_released)
-        button11 = self.centralWidget.findChild(QPushButton, "button11")
-        button11.pressed.connect(self.button11_pressed)
-        button11.released.connect(self.button11_released)
-        button12 = self.centralWidget.findChild(QPushButton, "button12")
-        button12.pressed.connect(self.button12_pressed)
-        button12.released.connect(self.button12_released)
-        button13 = self.centralWidget.findChild(QPushButton, "button13")
-        button13.pressed.connect(self.button13_pressed)
-        button13.released.connect(self.button13_released)
-
-        button20 = self.centralWidget.findChild(QPushButton, "button20")
-        button20.pressed.connect(self.button20_pressed)
-        button20.released.connect(self.button20_released)
-        button21 = self.centralWidget.findChild(QPushButton, "button21")
-        button21.pressed.connect(self.button21_pressed)
-        button21.released.connect(self.button21_released)
-        button22 = self.centralWidget.findChild(QPushButton, "button22")
-        button22.pressed.connect(self.button22_pressed)
-        button22.released.connect(self.button22_released)
-        button23 = self.centralWidget.findChild(QPushButton, "button23")
-        button23.pressed.connect(self.button23_pressed)
-        button23.released.connect(self.button23_released)
-
-        button30 = self.centralWidget.findChild(QPushButton, "button30")
-        button30.pressed.connect(self.button30_pressed)
-        button30.released.connect(self.button30_released)
-        button31 = self.centralWidget.findChild(QPushButton, "button31")
-        button31.pressed.connect(self.button31_pressed)
-        button31.released.connect(self.button31_released)
-        button32 = self.centralWidget.findChild(QPushButton, "button32")
-        button32.pressed.connect(self.button32_pressed)
-        button32.released.connect(self.button32_released)
-        button33 = self.centralWidget.findChild(QPushButton, "button33")
-        button33.pressed.connect(self.button33_pressed)
-        button33.released.connect(self.button33_released)
-
-        self.mocDisplay.button_led.connect(self.handle_button_led)

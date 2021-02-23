@@ -47,6 +47,7 @@ if __name__ == "__main__":
             sys.exit(-1)
 
         adapter = InputAdapterUI(window.findChild(QWidget, "centralwidget"))
+        app.installEventFilter(adapter)
 
         window.setFixedSize(318, 1050)
         window.show()
