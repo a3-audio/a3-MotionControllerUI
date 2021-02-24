@@ -1,6 +1,8 @@
 import math
 import time
 
+import numpy as np
+
 import PySide6.QtOpenGL
 
 from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
@@ -13,10 +15,17 @@ from Track import *
 from OpenGL import GL
 
 class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
-    button_led = Signal(int, int, bool)
+    pad_led = Signal(int, int, bool)
+
+    @dataclass
+    class UIState:
+        recording: bool = False
+        pads: np.array = np.zeros((4, 4), dtype=bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.ui_state = MotionControllerDisplay.UIState()
 
         self.context = QtGui.QOpenGLContext()
         print(self.context.format())
@@ -25,11 +34,11 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
             'menu_stroke_width_rel_w' : 0.01,
             'channel_top_height_rel' : 0.1,
             'channel_bottom_height_rel' : 0.07,
-            'text_pad_rel_w' : 0.02,
-            'text_pad_rel_h' : 0.012,
+            'text_padding_rel_w' : 0.02,
+            'text_padding_rel_h' : 0.012,
             'font_scale' : 0.015,
             'line_spacing_rel_h' : 0.028,
-            'circle_pad_rel' : 0.2,
+            'circle_padding_rel' : 0.2,
             'marker_size_rel' : 0.06,
         }
 
@@ -83,8 +92,8 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         gl.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.draw_params_dynamic = {
-            'left_pad' : self.rel_to_abs_width(self.draw_params['text_pad_rel_w']),
-            'top_pad' : self.rel_to_abs_height(self.draw_params['text_pad_rel_h']),
+            'left_padding' : self.rel_to_abs_width(self.draw_params['text_padding_rel_w']),
+            'top_padding' : self.rel_to_abs_height(self.draw_params['text_padding_rel_h']),
             'line_spacing' : self.rel_to_abs_height(self.draw_params['line_spacing_rel_h']),
             'header_height' : self.rel_to_abs_height(self.draw_params['channel_top_height_rel']),
             'footer_height' : self.rel_to_abs_height(self.draw_params['channel_bottom_height_rel']),
@@ -111,6 +120,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         region = self.rect()
         region.adjust(0, self.draw_params_dynamic['header_height'],
                       0, -self.draw_params_dynamic['footer_height'])
+        self.draw_params_dynamic['region_center'] = region
         self.drawCenterRegion(painter, region)
 
     def drawCenterRegion(self, painter, region):
@@ -123,7 +133,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         center_region.setHeight(center_size)
         center_region.moveCenter(region.center())
 
-        orientation_size = center_size * (1-self.draw_params['circle_pad_rel'])
+        orientation_size = center_size * (1-self.draw_params['circle_padding_rel'])
         orientation_region = QRect(center_region)
         orientation_region.setWidth(orientation_size)
         orientation_region.setHeight(orientation_size)
@@ -145,8 +155,8 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         painter.setPen(QtCore.Qt.black)
 
         text_region = QRect(region)
-        text_region.adjust(self.draw_params_dynamic['left_pad'],
-                           self.draw_params_dynamic['top_pad'], 0, 0)
+        text_region.adjust(self.draw_params_dynamic['left_padding'],
+                           self.draw_params_dynamic['top_padding'], 0, 0)
 
         ambi_mode_string = track.ambi_params.mode.name
         painter.drawText(text_region, "Mode: " + ambi_mode_string)
@@ -161,20 +171,15 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
     def drawTrackFooter(self, painter, region, color, track):
         painter.setBrush(QtGui.QBrush(color))
-
-        if track.record_params.armed:
-            painter.setPen(self.pen_outlines)
-        else:
-            painter.setPen(QtCore.Qt.NoPen)
-
+        painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
 
+        # set pen for text drawing
         painter.setPen(QtCore.Qt.black)
 
         text_region = QRect(region)
-
-        text_region.adjust(self.draw_params_dynamic['left_pad'],
-                           self.draw_params_dynamic['top_pad'], 0, 0)
+        text_region.adjust(self.draw_params_dynamic['left_padding'],
+                           self.draw_params_dynamic['top_padding'], 0, 0)
 
         painter.drawText(text_region, "Length: " + str(track.playback_params.length))
 
@@ -206,10 +211,22 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawEllipse(marker_region)
 
+    def startRecording(self):
+        print("starting recording...")
+
+    def mousePressEvent(self, event):
+        region_center = self.draw_params_dynamic['region_center']
+        if region_center.contains(event.pos()):
+            if not self.ui_state.recording and self.any_pad_pressed():
+                self.startRecording()
+
     def mouseMoveEvent(self, event):
         # rel = self.abs2rel(event.x(), event.y())
         self.mouse_pos = (event.x(), event.y())
         self.repaint()
+
+    def any_pad_pressed(self):
+        return False
 
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):
@@ -233,29 +250,29 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
     @Slot(int)
     def encoder_pressed(self, channel):
         print("channel " + str(channel) + " encoder pressed")
-        if self.detect_double_press(channel):
-            return
+        # if self.detect_double_press(channel):
+        #     return
 
     @Slot(int)
     def encoder_double_pressed(self, channel):
-        self.tracks[channel].record_params.armed = not self.tracks[channel].record_params.armed
-        self.repaint()
+        print("channel " + str(channel) + " encoder double pressed")
 
     @Slot(int)
     def encoder_released(self, channel):
         print("channel " + str(channel) + " encoder released")
-        pass
 
     @Slot(int, int)
     def encoder_motion(self, channel, direction):
         print("channel " + str(channel) + " encoder moved in direction: " + str(direction))
 
     @Slot(int, int)
-    def button_pressed(self, channel, row):
-        print("channel " + str(channel) + " button " + str(row) + " pressed ")
-        self.button_led.emit(channel, row, True)
+    def pad_pressed(self, channel, row):
+        print("channel " + str(channel) + " pad " + str(row) + " pressed ")
+        self.ui_state.pads[channel][row] = True
+        self.pad_led.emit(channel, row, True)
 
     @Slot(int, int)
-    def button_released(self, channel, row):
-        print("channel " + str(channel) + " button " + str(row) + " released ")
-        self.button_led.emit(channel, row, False)
+    def pad_released(self, channel, row):
+        print("channel " + str(channel) + " pad " + str(row) + " released ")
+        self.ui_state.pads[channel][row] = False
+        self.pad_led.emit(channel, row, False)

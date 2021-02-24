@@ -35,7 +35,7 @@ class InputAdapterUI(QObject):
                 button.pressed.connect(lambda c=channel, r=row: self.button_pressed(c, r))
                 button.released.connect(lambda c=channel, r=row: self.button_released(c, r))
 
-        self.mocDisplay.button_led.connect(self.handle_button_led)
+        self.mocDisplay.pad_led.connect(self.handle_pad_led)
 
         self.keyCodeMap = {
             10: (0, 0),
@@ -88,11 +88,11 @@ class InputAdapterUI(QObject):
         self.mocDisplay.encoder_motion(channel, step)
 
     def button_pressed(self, channel, row):
-        self.mocDisplay.button_pressed(channel, row)
+        self.mocDisplay.pad_pressed(channel, row)
     def button_released(self, channel, row):
-        self.mocDisplay.button_released(channel, row)
+        self.mocDisplay.pad_released(channel, row)
 
-    def handle_button_led(self, channel, row, enabled):
+    def handle_pad_led(self, channel, row, enabled):
         button_name = f'button{channel}{row}'
         button = self.centralWidget.findChild(QPushButton, button_name)
 
