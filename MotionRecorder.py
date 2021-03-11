@@ -16,5 +16,9 @@ class MotionRecorder:
         print("starting recording...")
         self.rec_state.recording = True
 
+    def stop_recording(self):
+        print("recording stopped")
+        self.rec_state.recording = False
+
     def is_recording(self):
         return self.rec_state.recording

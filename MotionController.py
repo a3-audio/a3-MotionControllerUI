@@ -61,6 +61,10 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.recorder.start_recording()
 
+    def mouseReleaseEvent(self, event):
+        if self.recorder.is_recording():
+            self.recorder.stop_recording()
+
     def mouseMoveEvent(self, event):
         self.mouse_pos = (event.x(), event.y())
         self.repaint()
