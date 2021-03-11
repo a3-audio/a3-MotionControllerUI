@@ -85,7 +85,7 @@
      </layout>
     </item>
     <item>
-     <widget class="MotionControllerDisplay" name="mocDisplay">
+     <widget class="MotionController" name="motionController">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -422,9 +422,9 @@
    <header>widgets/QuadraticPushButton</header>
   </customwidget>
   <customwidget>
-   <class>MotionControllerDisplay</class>
+   <class>MotionController</class>
    <extends>QOpenGLWidget</extends>
-   <header>widgets/MotionControllerDisplay</header>
+   <header>widgets/MotionController</header>
   </customwidget>
  </customwidgets>
  <resources/>

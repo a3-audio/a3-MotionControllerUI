@@ -1,14 +1,14 @@
 from PySide6.QtCore import SIGNAL, QObject, QEvent
 from PySide6.QtWidgets import QDial, QPushButton
 
-from MotionControllerDisplay import MotionControllerDisplay
+from MotionController import MotionController
 from widgets.QuadraticDial import QuadraticDial
 
 class InputAdapterUI(QObject):
     def __init__(self, centralWidget):
         super().__init__()
 
-        self.mocDisplay = centralWidget.findChild(MotionControllerDisplay, "mocDisplay")
+        self.moc = centralWidget.findChild(MotionController, "motionController")
         self.centralWidget = centralWidget
 
         for channel in range(4):
@@ -35,7 +35,7 @@ class InputAdapterUI(QObject):
                 button.pressed.connect(lambda c=channel, r=row: self.button_pressed(c, r))
                 button.released.connect(lambda c=channel, r=row: self.button_released(c, r))
 
-        self.mocDisplay.pad_led.connect(self.handle_pad_led)
+        self.moc.pad_led.connect(self.handle_pad_led)
 
         self.keyCodeMap = {
             10: (0, 0),
@@ -77,20 +77,20 @@ class InputAdapterUI(QObject):
             return True
 
     def dialTop_valueChanged(self, channel, row, value):
-        self.mocDisplay.poti_changed(channel, row, value / 1023)
+        self.moc.poti_changed(channel, row, value / 1023)
 
     def buttonEncoder_pressed(self, channel):
-        self.mocDisplay.encoder_pressed(channel)
+        self.moc.encoder_pressed(channel)
     def buttonEncoder_released(self, channel):
-        self.mocDisplay.encoder_released(channel)
+        self.moc.encoder_released(channel)
 
     def dialBottom_step(self, channel, step):
-        self.mocDisplay.encoder_motion(channel, step)
+        self.moc.encoder_motion(channel, step)
 
     def button_pressed(self, channel, row):
-        self.mocDisplay.pad_pressed(channel, row)
+        self.moc.pad_pressed(channel, row)
     def button_released(self, channel, row):
-        self.mocDisplay.pad_released(channel, row)
+        self.moc.pad_released(channel, row)
 
     def handle_pad_led(self, channel, row, enabled):
         button_name = f'button{channel}{row}'

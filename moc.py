@@ -9,7 +9,7 @@ from PySide6.QtUiTools import QUiLoader
 
 from InputAdapterUI import InputAdapterUI
 from InputAdapterSerial import InputAdapterSerial
-from MotionControllerDisplay import MotionControllerDisplay
+from MotionController import MotionController
 
 from widgets.QuadraticDial import QuadraticDial
 from widgets.QuadraticPushButton import QuadraticPushButton
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         loader = QUiLoader()
         loader.registerCustomWidget(QuadraticDial)
         loader.registerCustomWidget(QuadraticPushButton)
-        loader.registerCustomWidget(MotionControllerDisplay)
+        loader.registerCustomWidget(MotionController)
 
         window = loader.load(ui_file)
         ui_file.close()
@@ -53,10 +53,10 @@ if __name__ == "__main__":
         window.show()
     else:
         window = QMainWindow()
-        mocDisplay = MotionControllerDisplay()
+        moc = MotionController()
 
-        adapter = InputAdapterSerial(mocDisplay, args.serial_device, args.serial_baudrate)
-        window.setCentralWidget(mocDisplay)
+        adapter = InputAdapterSerial(moc, args.serial_device, args.serial_baudrate)
+        window.setCentralWidget(moc)
         window.showFullScreen()
 
     # create track objects and pass to display widget
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         track.ambi_params.width = 45
         tracks.append(track)
 
-    mocDisplay = window.findChild(MotionControllerDisplay)
-    mocDisplay.setTracks(tracks)
+    moc = window.findChild(MotionController)
+    moc.setTracks(tracks)
 
     sys.exit(app.exec_())

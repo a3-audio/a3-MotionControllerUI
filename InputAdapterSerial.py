@@ -2,7 +2,8 @@ import os
 
 from PySide6 import QtCore
 from PySide6.QtCore import Signal, QObject, QMetaObject, QThread
-from MotionControllerDisplay import MotionControllerDisplay
+
+from MotionController import MotionController
 
 import numpy
 import asyncio
@@ -17,17 +18,17 @@ class InputAdapterSerial(QThread):
         button_pressed = Signal(int, int)
         button_released = Signal(int, int)
 
-        def __init__(self, mocDisplay):
+        def __init__(self, moc):
             super().__init__()
 
-            self.mocDisplay = mocDisplay
+            self.moc = moc
 
-            self.poti_changed.connect(mocDisplay.poti_changed, QtCore.Qt.QueuedConnection)
-            self.encoder_motion.connect(mocDisplay.encoder_motion, QtCore.Qt.QueuedConnection)
-            self.encoder_pressed.connect(mocDisplay.encoder_pressed, QtCore.Qt.QueuedConnection)
-            self.encoder_released.connect(mocDisplay.encoder_released, QtCore.Qt.QueuedConnection)
-            self.button_pressed.connect(mocDisplay.button_pressed, QtCore.Qt.QueuedConnection)
-            self.button_released.connect(mocDisplay.button_released, QtCore.Qt.QueuedConnection)
+            self.poti_changed.connect(moc.poti_changed, QtCore.Qt.QueuedConnection)
+            self.encoder_motion.connect(moc.encoder_motion, QtCore.Qt.QueuedConnection)
+            self.encoder_pressed.connect(moc.encoder_pressed, QtCore.Qt.QueuedConnection)
+            self.encoder_released.connect(moc.encoder_released, QtCore.Qt.QueuedConnection)
+            self.button_pressed.connect(moc.button_pressed, QtCore.Qt.QueuedConnection)
+            self.button_released.connect(moc.button_released, QtCore.Qt.QueuedConnection)
 
         def connection_made(self, transport):
             self.transport = transport
@@ -120,9 +121,9 @@ class InputAdapterSerial(QThread):
                 if identifier == "B15":
                     self.button_pressed.emit(0,3)
 
-    def __init__(self, mocDisplay, serialDevice, baudRate):
+    def __init__(self, moc, serialDevice, baudRate):
         super(InputAdapterSerial, self).__init__()
-        self.mocDisplay = mocDisplay
+        self.moc = moc
         self.serialDevice = serialDevice
         self.baudRate = baudRate
 
@@ -133,7 +134,7 @@ class InputAdapterSerial(QThread):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            coro = serial_asyncio.create_serial_connection(loop, lambda: InputAdapterSerial.SerialProtocol(self.mocDisplay), self.serialDevice, baudrate=self.baudRate)
+            coro = serial_asyncio.create_serial_connection(loop, lambda: InputAdapterSerial.SerialProtocol(self.moc), self.serialDevice, baudrate=self.baudRate)
             loop.run_until_complete(coro)
             loop.run_forever()
         except Exception as e:
