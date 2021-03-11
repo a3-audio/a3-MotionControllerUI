@@ -29,8 +29,7 @@ class PlaybackParams:
 
 @dataclass
 class RecordParams:
-    armed: bool = False
-    recording: bool = False
+    pass
 
 class Track:
     def __init__(self):
