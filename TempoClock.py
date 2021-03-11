@@ -1,3 +1,4 @@
+import dataclasses
 from dataclasses import dataclass
 
 import time
@@ -29,13 +30,12 @@ class TempoClock(QObject):
         self.bpm = 120
         self.measure = TempoClock.Measure(0, 0, 0, 0)
 
-        self.thread = QThread()
-
         self.timer = QTimer()
         self.timer.setInterval(TempoClock.TIMER_INTERVAL)
         self.timer.setTimerType(Qt.PreciseTimer)
         self.timer.start()
 
+        self.thread = QThread()
         self.timer.moveToThread(self.thread)
         self.moveToThread(self.thread)
         self.timer.timeout.connect(self.timer_callback)
@@ -51,9 +51,9 @@ class TempoClock(QObject):
         if self.measure.time_ns == 0:
             # start counting
             self.measure.time_ns = t
-            self.tick.emit(self.measure)
-            self.beat.emit(self.measure)
-            self.bar.emit(self.measure)
+            self.tick.emit(dataclasses.replace(self.measure))
+            self.beat.emit(dataclasses.replace(self.measure))
+            self.bar.emit(dataclasses.replace(self.measure))
         elif t >= self.measure.time_ns + ns_per_tick:
             while self.measure.time_ns + ns_per_tick <= t:
                 self.measure.time_ns += ns_per_tick
@@ -67,6 +67,6 @@ class TempoClock(QObject):
             if self.measure.beat == TempoClock.BEATS_PER_BAR:
                 self.measure.bar += 1
                 self.measure.beat = 0
-                self.bar.emit(self.measure)
-            self.beat.emit(self.measure)
-        self.tick.emit(self.measure)
+                self.bar.emit(dataclasses.replace(self.measure))
+            self.beat.emit(dataclasses.replace(self.measure))
+        self.tick.emit(dataclasses.replace(self.measure))
