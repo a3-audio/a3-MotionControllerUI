@@ -35,6 +35,15 @@ class MotionControllerPainter:
 
         self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
 
+    def set_tracks(self, tracks):
+        self.tracks = tracks
+        self.track_colors = []
+        num_tracks = len(self.moc.tracks)
+        for t in range(num_tracks):
+            color = QColor()
+            color.setHsl(int(255/num_tracks*t), 100, 150)
+            self.track_colors.append(color);
+
     def abs_to_rel(self, x, y):
         return (x / self.moc.width(), y / self.moc.height())
     def rel_to_abs(self, x, y):
@@ -52,14 +61,6 @@ class MotionControllerPainter:
         x = math.cos(angle) * self.draw_params_dynamic['circle_radius']
         y = -math.sin(angle) * self.draw_params_dynamic['circle_radius']
         return QPoint(x, y)
-
-    def tracks_updated(self):
-        self.track_colors = []
-        num_tracks = len(self.moc.tracks)
-        for t in range(num_tracks):
-            color = QColor()
-            color.setHsl(int(255/num_tracks*t), 100, 150)
-            self.track_colors.append(color);
 
     def paintGL(self):
         gl = self.context.functions()

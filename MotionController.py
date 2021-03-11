@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
 
 from Track import *
 from MotionControllerPainter import *
+from MotionRecorder import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
@@ -28,7 +29,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     @dataclass
     class UIState:
-        recording: bool = False
         pads: np.array = np.zeros((4, 4), dtype=bool)
 
     def __init__(self, parent=None):
@@ -45,30 +45,28 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.mouse_pos = (0, 0)
 
         self.moc_painter = MotionControllerPainter(self)
+        self.recorder = MotionRecorder()
 
 
     def set_tracks(self, tracks):
         self.tracks = tracks
-        self.moc_painter.tracks_updated()
+        self.moc_painter.set_tracks(tracks)
+        self.recorder.set_tracks(tracks)
 
     def paintGL(self):
         self.moc_painter.paintGL()
 
-    def start_recording(self):
-        print("starting recording...")
-
     def mousePressEvent(self, event):
         if self.moc_painter.center_region_contains(event.pos()):
-            if not self.ui_state.recording and self.any_pad_pressed():
-                self.start_recording()
+            if not self.recorder.is_recording() and self.any_pad_pressed():
+                self.recorder.start_recording()
 
     def mouseMoveEvent(self, event):
-        # rel = self.abs2rel(event.x(), event.y())
         self.mouse_pos = (event.x(), event.y())
         self.repaint()
 
     def any_pad_pressed(self):
-        return False
+        return np.sum(self.ui_state.pads)
 
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):
