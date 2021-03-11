@@ -5,7 +5,8 @@ class MotionRecorder:
     class RecordState:
         recording: bool = False
 
-    def __init__(self):
+    def __init__(self, clock):
+        self.clock = clock
         self.tracks = []
         self.rec_state = MotionRecorder.RecordState()
 

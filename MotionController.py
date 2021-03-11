@@ -6,8 +6,9 @@ from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
 from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
 
 from Track import *
-from MotionControllerPainter import *
+from TempoClock import *
 from MotionRecorder import *
+from MotionControllerPainter import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
@@ -31,6 +32,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     class UIState:
         pads: np.array = np.zeros((4, 4), dtype=bool)
 
+    def print_tick(self, measure):
+        print(measure)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -45,7 +49,11 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.mouse_pos = (0, 0)
 
         self.moc_painter = MotionControllerPainter(self)
-        self.recorder = MotionRecorder()
+
+        self.clock = TempoClock()
+        self.clock.beat.connect(self.print_tick)
+
+        self.recorder = MotionRecorder(self.clock)
 
 
     def set_tracks(self, tracks):
