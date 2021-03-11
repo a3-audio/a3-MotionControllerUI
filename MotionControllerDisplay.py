@@ -232,6 +232,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
     @Slot(int)
     def encoder_pressed(self, channel):
+        print("channel " + str(channel) + " encoder pressed")
         if self.detect_double_press(channel):
             return
 
@@ -242,6 +243,7 @@ class MotionControllerDisplay(QtOpenGLWidgets.QOpenGLWidget):
 
     @Slot(int)
     def encoder_released(self, channel):
+        print("channel " + str(channel) + " encoder released")
         pass
 
     @Slot(int, int)
