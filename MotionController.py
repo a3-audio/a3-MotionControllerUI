@@ -32,20 +32,20 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter = MotionControllerPainter(self)
 
 
-    def setTracks(self, tracks):
+    def set_tracks(self, tracks):
         self.tracks = tracks
         self.moc_painter.tracks_updated()
 
     def paintGL(self):
         self.moc_painter.paintGL()
 
-    def startRecording(self):
+    def start_recording(self):
         print("starting recording...")
 
     def mousePressEvent(self, event):
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.ui_state.recording and self.any_pad_pressed():
-                self.startRecording()
+                self.start_recording()
 
     def mouseMoveEvent(self, event):
         # rel = self.abs2rel(event.x(), event.y())

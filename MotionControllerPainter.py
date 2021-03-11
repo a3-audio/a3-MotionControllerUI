@@ -6,7 +6,6 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtOpenGL
 
-#from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, 
 from PySide6.QtCore import QRect, QPoint
 from PySide6.QtGui import QColor, QFont, QImage
 from PySide6.QtSvg import QSvgRenderer
@@ -86,20 +85,20 @@ class MotionControllerPainter:
 
                 header_region = QRect(column_region)
                 header_region.setHeight(self.draw_params_dynamic['header_height'])
-                self.drawTrackHeader(painter, header_region, self.track_colors[t], self.moc.tracks[t])
+                self.draw_track_header(painter, header_region, self.track_colors[t], self.moc.tracks[t])
 
                 footer_region = QRect(column_region)
                 footer_region.setBottom(self.moc.height())
                 footer_region.setTop(self.moc.height() - self.draw_params_dynamic['footer_height'])
-                self.drawTrackFooter(painter, footer_region, self.track_colors[t], self.moc.tracks[t])
+                self.draw_track_footer(painter, footer_region, self.track_colors[t], self.moc.tracks[t])
 
         region = self.moc.rect()
         region.adjust(0, self.draw_params_dynamic['header_height'],
                       0, -self.draw_params_dynamic['footer_height'])
         self.draw_params_dynamic['region_center'] = region
-        self.drawCenterRegion(painter, region)
+        self.draw_center_region(painter, region)
 
-    def drawCenterRegion(self, painter, region):
+    def draw_center_region(self, painter, region):
         painter.setBrush(QtCore.Qt.black)
         painter.drawRect(region)
 
@@ -121,9 +120,9 @@ class MotionControllerPainter:
 
         if self.moc.tracks:
             for t in range(len(self.moc.tracks)):
-                self.drawTrackCenter(painter, center_region, self.track_colors[t], self.moc.tracks[t])
+                self.draw_track_center(painter, center_region, self.track_colors[t], self.moc.tracks[t])
 
-    def drawTrackHeader(self, painter, region, color, track):
+    def draw_track_header(self, painter, region, color, track):
         painter.setBrush(QtGui.QBrush(color))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
@@ -145,7 +144,7 @@ class MotionControllerPainter:
         side_string = f'Side: {track.ambi_params.side:.1f}dB'
         painter.drawText(text_region, side_string)
 
-    def drawTrackFooter(self, painter, region, color, track):
+    def draw_track_footer(self, painter, region, color, track):
         painter.setBrush(QtGui.QBrush(color))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
@@ -163,7 +162,7 @@ class MotionControllerPainter:
         playback_mode_string = track.playback_params.mode.name
         painter.drawText(text_region, "Loop: " + playback_mode_string)
 
-    def drawTrackCenter(self, painter, region, color, track):
+    def draw_track_center(self, painter, region, color, track):
         marker_size = self.draw_params['marker_size_rel'] * region.width()
 
         start_angle = self.azimuth_to_deg(track.ambi_params.azimuth + track.ambi_params.width/2) * 16

@@ -71,6 +71,6 @@ if __name__ == "__main__":
         tracks.append(track)
 
     moc = window.findChild(MotionController)
-    moc.setTracks(tracks)
+    moc.set_tracks(tracks)
 
     sys.exit(app.exec_())
