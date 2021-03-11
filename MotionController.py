@@ -9,6 +9,21 @@ from Track import *
 from MotionControllerPainter import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
+    """Main component for the motion controller logic.
+
+    This class acts as the central event dispatcher for input that
+    comes from the hardware controls (serial), the mockup UI (qt
+    events), the server backend (OSC).
+
+    It handles the UI state logic and delegates the specific tasks
+    (drawing, recording and playback of tracks, etc.) to designated
+    classes.
+
+    While being a QOpenGLWidget to receive input events, the drawing
+    logic is delegated to MotionControllerPainter.
+
+    """
+
     pad_led = Signal(int, int, bool)
 
     @dataclass
