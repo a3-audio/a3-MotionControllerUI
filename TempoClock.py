@@ -5,7 +5,6 @@ import time
 
 from PySide6.QtCore import Qt, QObject, QThread, QTimer, Signal
 
-
 class TempoClock(QObject):
     @dataclass
     class Measure:
@@ -21,7 +20,7 @@ class TempoClock(QObject):
     TICKS_PER_BEAT = 64
     BEATS_PER_BAR  = 4
 
-    # update all 5 ms for now
+    # update rate (ms)
     TIMER_INTERVAL = 5
 
     def __init__(self):
@@ -42,7 +41,7 @@ class TempoClock(QObject):
         self.thread.start(QThread.TimeCriticalPriority)
 
     def ns_per_tick(self):
-        return 60 / self.bpm / TempoClock.TICKS_PER_BEAT * 10**9
+        return 60 * 10**9 / self.bpm / TempoClock.TICKS_PER_BEAT
 
     def timer_callback(self):
         t = time.time_ns()
@@ -55,6 +54,7 @@ class TempoClock(QObject):
             self.beat.emit(dataclasses.replace(self.measure))
             self.bar.emit(dataclasses.replace(self.measure))
         elif t >= self.measure.time_ns + ns_per_tick:
+            # catch up missed ticks
             while self.measure.time_ns + ns_per_tick <= t:
                 self.measure.time_ns += ns_per_tick
                 self.count_tick()
@@ -62,11 +62,11 @@ class TempoClock(QObject):
     def count_tick(self):
         self.measure.tick += 1
         if self.measure.tick == TempoClock.TICKS_PER_BEAT:
-            self.measure.beat += 1
             self.measure.tick = 0
+            self.measure.beat += 1
             if self.measure.beat == TempoClock.BEATS_PER_BAR:
-                self.measure.bar += 1
                 self.measure.beat = 0
+                self.measure.bar += 1
                 self.bar.emit(dataclasses.replace(self.measure))
             self.beat.emit(dataclasses.replace(self.measure))
         self.tick.emit(dataclasses.replace(self.measure))
