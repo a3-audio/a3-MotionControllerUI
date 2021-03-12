@@ -62,6 +62,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter.paintGL()
 
     def mousePressEvent(self, event):
+        self.ui_state.mouse_pos = (event.x(), event.y())
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.arm_pressed_patterns()
