@@ -30,10 +30,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     @dataclass
     class UIState:
+        mouse_pos: (int, int) = (0, 0)
         pads: np.array = np.zeros((4, 4), dtype=bool)
-
-    def print_tick(self, measure):
-        print(measure)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -51,10 +49,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter = MotionControllerPainter(self)
 
         self.clock = TempoClock()
-        self.clock.beat.connect(self.print_tick)
+        self.recorder = MotionRecorder()
 
-        self.recorder = MotionRecorder(self.clock)
-
+        self.clock.tick.connect(self.record_playback_tick)
 
     def set_tracks(self, tracks):
         self.tracks = tracks
@@ -67,18 +64,35 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def mousePressEvent(self, event):
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.recorder.is_recording() and self.any_pad_pressed():
-                self.recorder.start_recording()
+                self.arm_pressed_patterns()
+                self.recorder.prepare_recording(self.clock.measure)
 
     def mouseReleaseEvent(self, event):
         if self.recorder.is_recording():
             self.recorder.stop_recording()
+            self.disarm_all_patterns()
+            print(self.tracks[0].patterns[0].ticks)
 
     def mouseMoveEvent(self, event):
-        self.mouse_pos = (event.x(), event.y())
+        self.ui_state.mouse_pos = (event.x(), event.y())
         self.repaint()
+
+    def arm_pressed_patterns(self):
+        arm_indices = np.argwhere(self.ui_state.pads == True)
+        for index in arm_indices:
+            self.tracks[index[0]].patterns[index[1]].arm(
+                self.tracks[index[0]].record_params.length)
+
+    def disarm_all_patterns(self):
+        for channel in range(4):
+            for pattern in range(4):
+                self.tracks[channel].patterns[pattern].disarm()
 
     def any_pad_pressed(self):
         return np.sum(self.ui_state.pads)
+
+    def record_playback_tick(self, measure):
+        self.recorder.record_tick(measure, self.ui_state.mouse_pos)
 
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):

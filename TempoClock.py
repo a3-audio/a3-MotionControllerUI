@@ -13,6 +13,11 @@ class TempoClock(QObject):
         bar: int = 0
         time_ns: int = 0
 
+        def tick_global(self):
+            beat = TempoClock.BEATS_PER_BAR * self.bar + self.beat
+            tick = TempoClock.TICKS_PER_BEAT * beat + self.tick
+            return tick
+
     tick = Signal(Measure)
     beat = Signal(Measure)
     bar = Signal(Measure)

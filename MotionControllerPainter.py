@@ -157,7 +157,7 @@ class MotionControllerPainter:
         text_region.adjust(self.draw_params_dynamic['left_padding'],
                            self.draw_params_dynamic['top_padding'], 0, 0)
 
-        painter.drawText(text_region, "Length: " + str(track.playback_params.length))
+        painter.drawText(text_region, "Length: " + str(track.record_params.length))
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         playback_mode_string = track.playback_params.mode.name

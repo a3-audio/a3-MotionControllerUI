@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from Pattern import *
+
 @dataclass
 class AmbisonicParams:
     class SpatializationMode(Enum):
@@ -23,16 +25,20 @@ class PlaybackParams:
         PINGPONG = 3
         FREE = 4
 
-    length: int = 16
     mode: PlaybackMode = PlaybackMode.LOOP
     invert: bool = False
 
 @dataclass
 class RecordParams:
-    pass
+    length: int = 16
 
 class Track:
     def __init__(self):
         self.ambi_params = AmbisonicParams()
         self.playback_params = PlaybackParams()
         self.record_params = RecordParams()
+
+        # for now each track owns 4 patterns that are one-to-one
+        # mapped to the pads. this is probably subject to change.
+        self.patterns = [Pattern() for _ in range(4)]
+        self.active_pattern = None
