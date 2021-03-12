@@ -166,26 +166,28 @@ class MotionControllerPainter:
     def draw_track_center(self, painter, region, color, track):
         marker_size = self.draw_params['marker_size_rel'] * region.width()
 
-        start_angle = self.azimuth_to_deg(track.ambi_params.azimuth + track.ambi_params.width/2) * 16
-        span_angle = track.ambi_params.width * 16
+        # start_angle = self.azimuth_to_deg(track.ambi_params.azimuth + track.ambi_params.width/2) * 16
+        # span_angle = track.ambi_params.width * 16
 
-        pen = QtGui.QPen()
-        pen.setWidth(marker_size / 3)
-        pen.setBrush(color)
-        painter.setPen(pen)
-        painter.drawArc(self.draw_params_dynamic['circle_region'], start_angle, span_angle)
+        # pen = QtGui.QPen()
+        # pen.setWidth(marker_size / 3)
+        # pen.setBrush(color)
+        # painter.setPen(pen)
+        # painter.drawArc(self.draw_params_dynamic['circle_region'], start_angle, span_angle)
 
-        marker_angle = self.azimuth_to_rad(track.ambi_params.azimuth)
-        marker_position = region.center() + self.angle_to_position(marker_angle)
+        #        marker_angle = self.azimuth_to_rad(track.ambi_params.azimuth)
+        #        marker_position = region.center() + self.angle_to_position(marker_angle)
 
-        marker_region = QRect()
-        marker_region.setWidth(marker_size)
-        marker_region.setHeight(marker_size)
-        marker_region.moveCenter(marker_position)
+        if track.position:
+            marker_position = QPoint(track.position[0], track.position[1])
+            marker_region = QRect()
+            marker_region.setWidth(marker_size)
+            marker_region.setHeight(marker_size)
+            marker_region.moveCenter(marker_position)
 
-        painter.setBrush(QtGui.QBrush(color))
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.drawEllipse(marker_region)
+            painter.setBrush(QtGui.QBrush(color))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(marker_region)
 
     def center_region_contains(self, pos):
         region_center = self.draw_params_dynamic['region_center']

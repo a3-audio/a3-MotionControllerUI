@@ -5,10 +5,11 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
 from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
 
+from MotionControllerPainter import *
 from Track import *
 from TempoClock import *
 from MotionRecorder import *
-from MotionControllerPainter import *
+from MotionPlayer import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
@@ -50,13 +51,18 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         self.clock = TempoClock()
         self.recorder = MotionRecorder()
+        self.player = MotionPlayer()
 
         self.clock.tick.connect(self.record_playback_tick)
+        self.clock.beat.connect(self.print_beat)
+
+        self.player.track_position.connect(self.track_position_update)
 
     def set_tracks(self, tracks):
         self.tracks = tracks
         self.moc_painter.set_tracks(tracks)
         self.recorder.set_tracks(tracks)
+        self.player.set_tracks(tracks)
 
     def paintGL(self):
         self.moc_painter.paintGL()
@@ -66,34 +72,52 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.arm_pressed_patterns()
-                self.recorder.prepare_recording(self.clock.measure)
+                self.recorder.prepare_recording(self.clock.measure.next_downbeat())
+                self.play_pressed_patterns()
 
     def mouseReleaseEvent(self, event):
         if self.recorder.is_recording():
             self.recorder.stop_recording()
             self.disarm_all_patterns()
-            print(self.tracks[0].patterns[0].ticks)
 
     def mouseMoveEvent(self, event):
         self.ui_state.mouse_pos = (event.x(), event.y())
         self.repaint()
 
     def arm_pressed_patterns(self):
-        arm_indices = np.argwhere(self.ui_state.pads == True)
+        arm_indices = self.pressed_pad_indices()
         for index in arm_indices:
-            self.tracks[index[0]].patterns[index[1]].arm(
-                self.tracks[index[0]].record_params.length)
+            track = self.tracks[index[0]]
+            track.patterns[index[1]].arm(track.record_params.length)
+
+    def play_pressed_patterns(self):
+        play_indices = self.pressed_pad_indices()
+        for index in play_indices:
+            track = self.tracks[index[0]]
+            self.player.set_active_pattern(track, track.patterns[index[1]])
+            self.player.prepare_playback(track, self.clock.measure.next_downbeat())
 
     def disarm_all_patterns(self):
         for channel in range(4):
             for pattern in range(4):
                 self.tracks[channel].patterns[pattern].disarm()
 
+    def pressed_pad_indices(self):
+        return np.argwhere(self.ui_state.pads == True)
+
     def any_pad_pressed(self):
         return np.sum(self.ui_state.pads)
 
     def record_playback_tick(self, measure):
         self.recorder.record_tick(measure, self.ui_state.mouse_pos)
+        self.player.playback_tick(measure)
+
+    def track_position_update(self, track, position):
+        track.position = position
+        self.repaint()
+
+    def print_beat(self, measure):
+        print(measure)
 
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):

@@ -18,6 +18,13 @@ class TempoClock(QObject):
             tick = TempoClock.TICKS_PER_BEAT * beat + self.tick
             return tick
 
+        def next_downbeat(self):
+            downbeat = TempoClock.Measure()
+            downbeat.tick = 0
+            downbeat.beat = 0
+            downbeat.bar = self.bar + 1
+            return downbeat
+
     tick = Signal(Measure)
     beat = Signal(Measure)
     bar = Signal(Measure)

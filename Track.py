@@ -13,8 +13,6 @@ class AmbisonicParams:
 
     width: float = 45
     side: float = 0
-    azimuth: float = 0
-    radius: float = 1
     mode: SpatializationMode = SpatializationMode.MONO
 
 @dataclass
@@ -37,8 +35,8 @@ class Track:
         self.ambi_params = AmbisonicParams()
         self.playback_params = PlaybackParams()
         self.record_params = RecordParams()
+        self.position = None
 
         # for now each track owns 4 patterns that are one-to-one
         # mapped to the pads. this is probably subject to change.
         self.patterns = [Pattern() for _ in range(4)]
-        self.active_pattern = None

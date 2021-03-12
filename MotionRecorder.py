@@ -13,11 +13,7 @@ class MotionRecorder:
         self.tracks = tracks
 
     def prepare_recording(self, measure):
-        self.measure_start = dataclasses.replace(measure)
-        # start recording on the downbeat of the next bar
-        self.measure_start.tick = 0
-        self.measure_start.beat = 0
-        self.measure_start.bar += 1
+        self.measure_start = measure
         self.prepared = True
 
     def stop_recording(self):
@@ -37,6 +33,5 @@ class MotionRecorder:
             for track in self.tracks:
                 for pattern in track.patterns:
                     if pattern.armed:
-                        tick_to_write = (measure.tick_global() - self.measure_start.tick_global()) % (pattern.length * TempoClock.TICKS_PER_BEAT)
-                        print("tick_to_write: {}".format(tick_to_write))
+                        tick_to_write = pattern.tick_in_pattern_relative(measure, self.measure_start)
                         pattern.ticks[tick_to_write] = position
