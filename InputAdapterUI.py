@@ -92,11 +92,10 @@ class InputAdapterUI(QObject):
     def button_released(self, channel, row):
         self.moc.pad_released(channel, row)
 
-    def handle_pad_led(self, channel, row, enabled):
+    def handle_pad_led(self, channel, row, color):
+        color_string = "rgb{}".format(color)
+        style = "QPushButton {background-color: " + color_string + "}"
+
         button_name = f'button{channel}{row}'
         button = self.centralWidget.findChild(QPushButton, button_name)
-
-        if enabled:
-            button.setStyleSheet('QPushButton {background-color: red}')
-        else:
-            button.setStyleSheet('')
+        button.setStyleSheet(style)

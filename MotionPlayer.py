@@ -17,7 +17,6 @@ class MotionPlayer(QObject):
     def __init__(self):
         super().__init__()
         self.tracks = []
-
         # map Track to PlaybackState
         self.playback_states = {}
 
@@ -47,4 +46,3 @@ class MotionPlayer(QObject):
         active_pattern = self.playback_states[track].active_pattern
         tick = active_pattern.tick_in_pattern_relative(measure, self.playback_states[track].measure_start)
         return active_pattern.ticks[tick]
-

@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
+from PySide6.QtCore import QObject, Signal
+
 from TempoClock import *
 
-class MotionRecorder:
+class MotionRecorder(QObject):
+    recording_state = Signal(bool)
+
     def __init__(self):
+        super().__init__()
+
         self.tracks = []
         self.prepared = False
         self.recording = False
@@ -19,6 +25,7 @@ class MotionRecorder:
     def stop_recording(self):
         print("recording stopped")
         self.recording = False
+        self.recording_state.emit(False)
         self.prepared = False
 
     def is_recording(self):
@@ -27,6 +34,7 @@ class MotionRecorder:
     def record_tick(self, measure, position):
         if self.prepared and measure.tick_global() == self.measure_start.tick_global():
             self.recording = True
+            self.recording_state.emit(True)
             print("recording started")
 
         if self.recording:

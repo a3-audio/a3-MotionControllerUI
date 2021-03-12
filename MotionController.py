@@ -27,7 +27,13 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     """
 
-    pad_led = Signal(int, int, bool)
+    pad_led = Signal(int, int, object)
+
+    led_color_empty = (0, 0, 0)
+    led_color_idle = (150, 150, 150)
+    led_color_recording = (255, 0, 0)
+    led_color_recording_alt = (255, 100, 100)
+    led_color_playback = (255, 255, 255)
 
     @dataclass
     class UIState:
@@ -54,8 +60,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.player = MotionPlayer()
 
         self.clock.tick.connect(self.record_playback_tick)
-        self.clock.beat.connect(self.print_beat)
+        self.clock.beat.connect(self.update_pad_leds)
 
+        self.recorder.recording_state.connect(self.recording_state_update)
         self.player.track_position.connect(self.track_position_update)
 
     def set_tracks(self, tracks):
@@ -112,13 +119,13 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.recorder.record_tick(measure, self.ui_state.mouse_pos)
         self.player.playback_tick(measure)
 
+    def recording_state_update(self, recording):
+        self.update_pad_leds()
+
     def track_position_update(self, track, position):
         track.position = position
         self.repaint()
-
-    def print_beat(self, measure):
-        print(measure)
-
+        
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
@@ -158,12 +165,46 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     @Slot(int, int)
     def pad_pressed(self, channel, row):
-        print("channel " + str(channel) + " pad " + str(row) + " pressed ")
+        # print("channel " + str(channel) + " pad " + str(row) + " pressed ")
         self.ui_state.pads[channel][row] = True
-        self.pad_led.emit(channel, row, True)
+        self.update_pad_leds()
 
     @Slot(int, int)
     def pad_released(self, channel, row):
-        print("channel " + str(channel) + " pad " + str(row) + " released ")
+        # print("channel " + str(channel) + " pad " + str(row) + " released ")
         self.ui_state.pads[channel][row] = False
         self.pad_led.emit(channel, row, False)
+        self.update_pad_leds()
+
+    def update_pad_leds(self, measure=None):
+        if not measure:
+            measure = self.clock.measure
+        print(measure)
+
+        for channel in range(4):
+            for row in range(4):
+                track = self.tracks[channel]
+                pattern = track.patterns[row]
+                color = MotionController.led_color_empty
+
+                # armed patterns
+                if [channel, row] in self.pressed_pad_indices().tolist():
+                    # before recording light up constantly
+                    if not self.recorder.is_recording():
+                        color = MotionController.led_color_recording
+                    # while recording blink armed patterns
+                    else:
+                        color = (MotionController.led_color_recording
+                                 if measure.beat % 2 else
+                                 MotionController.led_color_recording_alt)
+
+                # pattern is playing
+                elif (self.player.playback_states[track].playing and
+                      self.player.playback_states[track].active_pattern == pattern):
+                    color = MotionController.led_color_playback
+
+                # pattern is not playing
+                elif pattern.length != 0:
+                    color = MotionController.led_color_idle
+                    
+                self.pad_led.emit(channel, row, color)
