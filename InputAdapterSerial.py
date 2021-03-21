@@ -15,8 +15,8 @@ class InputAdapterSerial(QThread):
         encoder_motion = Signal(int, int)
         encoder_pressed = Signal(int)
         encoder_released = Signal(int)
-        button_pressed = Signal(int, int)
-        button_released = Signal(int, int)
+        pad_pressed = Signal(int, int)
+        pad_released = Signal(int, int)
 
         def __init__(self, moc):
             super().__init__()
@@ -27,8 +27,8 @@ class InputAdapterSerial(QThread):
             self.encoder_motion.connect(moc.encoder_motion, QtCore.Qt.QueuedConnection)
             self.encoder_pressed.connect(moc.encoder_pressed, QtCore.Qt.QueuedConnection)
             self.encoder_released.connect(moc.encoder_released, QtCore.Qt.QueuedConnection)
-            self.button_pressed.connect(moc.button_pressed, QtCore.Qt.QueuedConnection)
-            self.button_released.connect(moc.button_released, QtCore.Qt.QueuedConnection)
+            self.pad_pressed.connect(moc.pad_pressed, QtCore.Qt.QueuedConnection)
+            self.pad_released.connect(moc.pad_released, QtCore.Qt.QueuedConnection)
 
         def connection_made(self, transport):
             self.transport = transport
@@ -89,37 +89,37 @@ class InputAdapterSerial(QThread):
 
                 # Buttons
                 if identifier == "B0":
-                    self.button_pressed.emit(3,0)
+                    self.pad_pressed.emit(3,0)
                 if identifier == "B1":
-                    self.button_pressed.emit(2,0)
+                    self.pad_pressed.emit(2,0)
                 if identifier == "B2":
-                    self.button_pressed.emit(1,0)
+                    self.pad_pressed.emit(1,0)
                 if identifier == "B3":
-                    self.button_pressed.emit(0,0)
+                    self.pad_pressed.emit(0,0)
                 if identifier == "B4":
-                    self.button_pressed.emit(3,1)
+                    self.pad_pressed.emit(3,1)
                 if identifier == "B5":
-                    self.button_pressed.emit(2,1)
+                    self.pad_pressed.emit(2,1)
                 if identifier == "B6":
-                    self.button_pressed.emit(1,1)
+                    self.pad_pressed.emit(1,1)
                 if identifier == "B7":
-                    self.button_pressed.emit(0,1)
+                    self.pad_pressed.emit(0,1)
                 if identifier == "B8":
-                    self.button_pressed.emit(3,2)
+                    self.pad_pressed.emit(3,2)
                 if identifier == "B9":
-                    self.button_pressed.emit(2,2)
+                    self.pad_pressed.emit(2,2)
                 if identifier == "B10":
-                    self.button_pressed.emit(1,2)
+                    self.pad_pressed.emit(1,2)
                 if identifier == "B11":
-                    self.button_pressed.emit(0,2)
+                    self.pad_pressed.emit(0,2)
                 if identifier == "B12":
-                    self.button_pressed.emit(3,3)
+                    self.pad_pressed.emit(3,3)
                 if identifier == "B13":
-                    self.button_pressed.emit(2,3)
+                    self.pad_pressed.emit(2,3)
                 if identifier == "B14":
-                    self.button_pressed.emit(1,3)
+                    self.pad_pressed.emit(1,3)
                 if identifier == "B15":
-                    self.button_pressed.emit(0,3)
+                    self.pad_pressed.emit(0,3)
 
     def __init__(self, moc, serialDevice, baudRate):
         super(InputAdapterSerial, self).__init__()
