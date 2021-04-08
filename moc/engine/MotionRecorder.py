@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, Signal
 
-from TempoClock import *
+from moc.engine.TempoClock import *
 
 class MotionRecorder(QObject):
     recording_state = Signal(bool)

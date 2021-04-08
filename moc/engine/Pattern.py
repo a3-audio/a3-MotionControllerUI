@@ -1,4 +1,4 @@
-from TempoClock import *
+from moc.engine.TempoClock import *
 
 class Pattern:
     def __init__(self):

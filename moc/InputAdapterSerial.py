@@ -3,7 +3,7 @@ import os
 from PySide6 import QtCore
 from PySide6.QtCore import Signal, QObject, QMetaObject, QThread
 
-from MotionController import MotionController
+import moc.MotionController
 
 import numpy
 import asyncio

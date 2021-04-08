@@ -7,14 +7,14 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QMainWindow, QApplication, QWidget, QDial
 from PySide6.QtUiTools import QUiLoader
 
-from InputAdapterUI import InputAdapterUI
-from InputAdapterSerial import InputAdapterSerial
-from MotionController import MotionController
+import moc.MotionController
+import moc.InputAdapterUI
+import moc.InputAdapterSerial
 
-from widgets.QuadraticDial import QuadraticDial
-from widgets.QuadraticPushButton import QuadraticPushButton
+import moc.widgets.QuadraticDial
+import moc.widgets.QuadraticPushButton
 
-from Track import Track
+import moc.engine.Track
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -36,9 +36,9 @@ if __name__ == "__main__":
             print("Cannot open {}: {}".format(ui_file_name, ui_file.errorString()))
             sys.exit(-1)
         loader = QUiLoader()
-        loader.registerCustomWidget(QuadraticDial)
-        loader.registerCustomWidget(QuadraticPushButton)
-        loader.registerCustomWidget(MotionController)
+        loader.registerCustomWidget(moc.widgets.QuadraticDial.QuadraticDial)
+        loader.registerCustomWidget(moc.widgets.QuadraticPushButton.QuadraticPushButton)
+        loader.registerCustomWidget(moc.MotionController.MotionController)
 
         window = loader.load(ui_file)
         ui_file.close()
@@ -46,16 +46,16 @@ if __name__ == "__main__":
             print(loader.errorString())
             sys.exit(-1)
 
-        adapter = InputAdapterUI(window.findChild(QWidget, "centralwidget"))
+        adapter = moc.InputAdapterUI.InputAdapterUI(window.findChild(QWidget, "centralwidget"))
         app.installEventFilter(adapter)
 
         window.setFixedSize(318, 1050)
         window.show()
     else:
         window = QMainWindow()
-        moc = MotionController()
+        moc = moc.MotionController.MotionController()
 
-        adapter = InputAdapterSerial(moc, args.serial_device, args.serial_baudrate)
+        adapter = moc.InputAdapterSerial(moc, args.serial_device, args.serial_baudrate)
         window.setCentralWidget(moc)
         window.showFullScreen()
 
@@ -63,14 +63,14 @@ if __name__ == "__main__":
     tracks = []
     num_tracks = 4
     for t in range(num_tracks):
-        track = Track()
+        track = moc.engine.Track.Track()
         # evenly space tracks along circle for initialization
         track_angle_interval = (360/num_tracks)
         track.ambi_params.azimuth = -180 + track_angle_interval/2 + t*track_angle_interval
         track.ambi_params.width = 45
         tracks.append(track)
 
-    moc = window.findChild(MotionController)
+    moc = window.findChild(moc.MotionController.MotionController)
     moc.set_tracks(tracks)
 
     sys.exit(app.exec_())

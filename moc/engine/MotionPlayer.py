@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, QThread, Signal
 
-from TempoClock import *
-from Pattern import *
+from moc.engine.TempoClock import *
+from moc.engine.Pattern import *
 
 class MotionPlayer(QObject):
     # track object, position tuple

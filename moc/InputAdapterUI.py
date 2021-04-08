@@ -1,14 +1,14 @@
 from PySide6.QtCore import SIGNAL, QObject, QEvent
 from PySide6.QtWidgets import QDial, QPushButton
 
-from MotionController import MotionController
-from widgets.QuadraticDial import QuadraticDial
+import moc.MotionController
+import moc.widgets.QuadraticDial
 
 class InputAdapterUI(QObject):
     def __init__(self, centralWidget):
         super().__init__()
 
-        self.moc = centralWidget.findChild(MotionController, "motionController")
+        self.moc = centralWidget.findChild(moc.MotionController.MotionController, "motionController")
         self.centralWidget = centralWidget
 
         for channel in range(4):
@@ -25,7 +25,7 @@ class InputAdapterUI(QObject):
 
         for channel in range(4):
             name = "dialBottom{}".format(channel)
-            dial = self.centralWidget.findChild(QuadraticDial, name)
+            dial = self.centralWidget.findChild(moc.widgets.QuadraticDial.QuadraticDial, name)
             dial.step.connect(lambda x, c=channel: self.dialBottom_step(c, x))
 
         for channel in range(4):

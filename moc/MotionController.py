@@ -5,18 +5,18 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
 from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
 
-from MotionControllerPainter import *
-from Track import *
-from TempoClock import *
-from MotionRecorder import *
-from MotionPlayer import *
+from moc.MotionControllerPainter import *
+from moc.engine.Track import *
+from moc.engine.TempoClock import *
+from moc.engine.MotionRecorder import *
+from moc.engine.MotionPlayer import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
 
     This class acts as the central event dispatcher for input that
-    comes from the hardware controls (serial), the mockup UI (qt
-    events), the server backend (OSC).
+    comes from the hardware controls (serial), the main widget and
+    mockup UI (qt events), and the the server backend (OSC).
 
     It handles the UI state logic and delegates the specific tasks
     (drawing, recording and playback of tracks, etc.) to designated
@@ -125,7 +125,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def track_position_update(self, track, position):
         track.position = position
         self.repaint()
-        
+
     @Slot(int, int, float)
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
@@ -185,6 +185,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             for row in range(4):
                 track = self.tracks[channel]
                 pattern = track.patterns[row]
+
+                # default: empty pattern slot
                 color = MotionController.led_color_empty
 
                 # armed patterns
@@ -206,5 +208,5 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 # pattern is not playing
                 elif pattern.length != 0:
                     color = MotionController.led_color_idle
-                    
+
                 self.pad_led.emit(channel, row, color)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from Pattern import *
+from moc.engine.Pattern import *
 
 @dataclass
 class AmbisonicParams:

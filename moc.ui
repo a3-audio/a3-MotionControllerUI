@@ -414,7 +414,7 @@
   <customwidget>
    <class>QuadraticDial</class>
    <extends>QDial</extends>
-   <header>widgets/QuadraticDial</header>
+   <header>QuadraticDial</header>
   </customwidget>
   <customwidget>
    <class>QuadraticPushButton</class>
