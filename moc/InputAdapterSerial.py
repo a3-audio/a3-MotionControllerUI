@@ -88,7 +88,7 @@ class InputAdapterSerial(QThread):
                     self.encoder_pressed.emit(3)
 
                 # Buttons
-                if value:
+                if value == "1":
                     if identifier == "B0":
                         self.pad_pressed.emit(3,0)
                     if identifier == "B1":
