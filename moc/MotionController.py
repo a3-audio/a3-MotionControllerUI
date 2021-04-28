@@ -75,6 +75,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         for track in self.tracks:
             track.position_changed.connect(self.track_position_changed)
+            track.position_changed.connect(self.osc_sender.track_position_changed)
 
     def paintGL(self):
         self.moc_painter.paintGL()
@@ -94,26 +95,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     def mouseMoveEvent(self, event):
         self.ui_state.mouse_pos = QPointF(event.x(), event.y())
-        self.mouse_pos_to_azimuth_elevation(self.ui_state.mouse_pos)
         self.repaint()
-
-    def mouse_pos_to_azimuth_elevation(self, pos):
-        normalized_pos = self.moc_painter.normalized_mouse_pos(pos)
-        clamped_pos = QPointF(normalized_pos)
-
-        length = math.sqrt(QPointF.dotProduct(clamped_pos, clamped_pos))
-        if length > 1:
-            clamped_pos /= length
-        print(clamped_pos)
-
-        length_sqr = QPointF.dotProduct(clamped_pos, clamped_pos)
-        elevation = math.atan2(math.sqrt((1 - length_sqr)), math.sqrt(length_sqr))
-        elevation = elevation * 360 / (2 * math.pi)
-        print("elevation: " + str(elevation))
-
-        azimuth = -math.atan2(clamped_pos.x(), clamped_pos.y())
-        azimuth = azimuth * 360 / (2 * math.pi)
-        print("azimuth: " + str(azimuth))
 
     def arm_pressed_patterns(self):
         arm_indices = self.pressed_pad_indices()
@@ -147,8 +129,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def recording_state_changed(self, recording):
         self.update_pad_leds()
 
-    def track_position_changed(self, track, position):
-        track.position = position
+    def track_position_changed(self, track, pos):
         self.repaint()
 
     @Slot(int, int, float)

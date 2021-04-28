@@ -33,14 +33,18 @@ class RecordParams:
     length: int = 16
 
 class Track(QObject):
+    # track object, position tuple
     position_changed = Signal(object, object)
 
-    def __init__(self):
+    def __init__(self, index):
         super().__init__()
+
+        self.index = index
 
         self.ambi_params = AmbisonicParams()
         self.playback_params = PlaybackParams()
         self.record_params = RecordParams()
+
         self.position = None
 
         # for now each track owns 4 patterns that are one-to-one

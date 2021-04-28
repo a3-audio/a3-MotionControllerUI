@@ -4,8 +4,6 @@ from moc.engine.TempoClock import *
 from moc.engine.Pattern import *
 
 class MotionPlayer(QObject):
-    # track object, position tuple
-
     @dataclass
     class PlaybackState:
         prepared: bool = False
