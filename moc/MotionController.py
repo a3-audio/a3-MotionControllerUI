@@ -47,6 +47,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         self.tracks = None
 
+        self.stereo_encoder_ip = ""
+        self.stereo_encoder_base_port = 0
+
         self.ui_state = MotionController.UIState()
         self.interaction_params = {
             'double_press_time' : 0.250,
@@ -60,7 +63,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.clock = TempoClock()
         self.recorder = MotionRecorder()
         self.player = MotionPlayer()
-        self.osc_sender = OscSender()
 
         self.clock.tick.connect(self.record_playback_tick)
         self.clock.beat.connect(self.update_pad_leds)
@@ -72,6 +74,10 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter.set_tracks(tracks)
         self.recorder.set_tracks(tracks)
         self.player.set_tracks(tracks)
+
+        self.osc_sender = OscSender(len(self.tracks),
+                                    self.stereo_encoder_ip,
+                                    self.stereo_encoder_base_port)
 
         for track in self.tracks:
             track.position_changed.connect(self.track_position_changed)

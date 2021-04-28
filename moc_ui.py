@@ -23,6 +23,8 @@ if __name__ == "__main__":
     parser.add_argument("--develop", help="run in development mode with mockup UI", action="store_true")
     parser.add_argument("--serial_device", help="the serial port device file to use", default="")
     parser.add_argument("--serial_baudrate", help="the serial port baud rate to use", default=115200)
+    parser.add_argument("--stereo_encoder_ip", help="address of the host running the IEM StereoEncoders", default="127.0.0.1")
+    parser.add_argument("--stereo_encoder_base_port", help="base port of the StereoEncoder instances", default=1337)
     args = parser.parse_args()
 
     # print(args)
@@ -71,6 +73,8 @@ if __name__ == "__main__":
         tracks.append(track)
 
     moc = window.findChild(moc.MotionController.MotionController)
+    moc.stereo_encoder_ip = args.stereo_encoder_ip
+    moc.stereo_encoder_base_port = args.stereo_encoder_base_port
     moc.set_tracks(tracks)
 
     sys.exit(app.exec_())

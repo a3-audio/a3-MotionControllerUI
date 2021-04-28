@@ -5,14 +5,16 @@ from pythonosc import udp_client
 from PySide6.QtCore import QPointF
 
 class OscSender:
-    def __init__(self):
-        self.client = udp_client.SimpleUDPClient("127.0.0.1", 6789)
+    def __init__(self, num_tracks, ip, base_port):
+        self.clients = []
+        for t in range(num_tracks):
+            self.clients.append(udp_client.SimpleUDPClient(ip, base_port + t))
 
     def track_position_changed(self, track, pos):
         if pos != None:
-            self.mouse_pos_to_azimuth_elevation(pos)
+            self.send_azimuth_elevation(track.index, pos)
 
-    def mouse_pos_to_azimuth_elevation(self, pos):
+    def send_azimuth_elevation(self, index, pos):
         clamped_pos = QPointF(pos)
         length = math.sqrt(QPointF.dotProduct(clamped_pos, clamped_pos))
         if length > 1:
@@ -29,5 +31,5 @@ class OscSender:
         elevation = elevation * 360 / (2 * math.pi)
         # print("elevation: " + str(elevation))
 
-        self.client.send_message("/StereoEncoder/azimuth", azimuth)
-        self.client.send_message("/StereoEncoder/elevation", elevation)
+        self.clients[index].send_message("/StereoEncoder/azimuth", azimuth)
+        self.clients[index].send_message("/StereoEncoder/elevation", elevation)
