@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("--serial_device", help="the serial port device file to use", default="")
     parser.add_argument("--serial_baudrate", help="the serial port baud rate to use", default=115200)
     parser.add_argument("--stereo_encoder_ip", help="address of the host running the IEM StereoEncoders", default="127.0.0.1")
-    parser.add_argument("--stereo_encoder_base_port", help="base port of the StereoEncoder instances", default=1337)
+    parser.add_argument("--stereo_encoder_base_port", help="base port of the StereoEncoder instances", type=int, default=1337)
     args = parser.parse_args()
 
     # print(args)
