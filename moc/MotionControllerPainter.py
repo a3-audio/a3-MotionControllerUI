@@ -192,3 +192,9 @@ class MotionControllerPainter:
     def center_region_contains(self, pos):
         region_center = self.draw_params_dynamic['region_center']
         return region_center.contains(pos)
+
+    def normalized_mouse_pos(self, position):
+        return self.ui_state.mouse_pos
+
+    # def unnormalized_mouse_pos(self):
+    #     return self.ui_state.mouse_pos

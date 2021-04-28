@@ -116,7 +116,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         return np.sum(self.ui_state.pads)
 
     def record_playback_tick(self, measure):
-        self.recorder.record_tick(measure, self.ui_state.mouse_pos)
+        normalized_pos = self.painter.normalized_mouse_pos(self.ui_state.mouse_pos)
+        print(normalized_pos)
+        self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
     def recording_state_update(self, recording):
