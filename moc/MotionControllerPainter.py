@@ -179,7 +179,7 @@ class MotionControllerPainter:
         #        marker_position = region.center() + self.angle_to_position(marker_angle)
 
         if track.position:
-            marker_position = QPoint(track.position[0], track.position[1])
+            marker_position = self.unnormalized_mouse_pos(track.position)
             marker_region = QRectF()
             marker_region.setWidth(marker_size)
             marker_region.setHeight(marker_size)
@@ -196,9 +196,16 @@ class MotionControllerPainter:
     def normalized_mouse_pos(self, pos):
         region = self.draw_params_dynamic['circle_region']
         p = pos - region.center()
-        p.setX(p.x() / region.width() * 2.0)
-        p.setY(p.y() / region.height() * 2.0)
+        p.setX(p.x() * 2.0 / region.width())
+        p.setY(p.y() * 2.0 / region.height())
         return QPointF(p.x(), -p.y())
+
+    def unnormalized_mouse_pos(self, pos):
+        region = self.draw_params_dynamic['circle_region']
+        p = QPointF(pos)
+        p.setX(p.x() * region.width() / 2.0)
+        p.setY(-p.y() * region.height() / 2.0)
+        return p + region.center()
 
     # def unnormalized_mouse_pos(self):
     #     return self.ui_state.mouse_pos

@@ -89,7 +89,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     def mouseMoveEvent(self, event):
         self.ui_state.mouse_pos = QPointF(event.x(), event.y())
-        print(self.moc_painter.normalized_mouse_pos(self.ui_state.mouse_pos))
         self.repaint()
 
     def arm_pressed_patterns(self):
@@ -118,7 +117,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     def record_playback_tick(self, measure):
         normalized_pos = self.moc_painter.normalized_mouse_pos(self.ui_state.mouse_pos)
-        # print(normalized_pos)
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
