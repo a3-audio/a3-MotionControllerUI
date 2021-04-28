@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
-from PySide6.QtCore import QObject, QThread, Signal, Slot, QRect, QPoint
+from PySide6.QtCore import QObject, QThread, Signal, Slot, QPointF
 
 from moc.MotionControllerPainter import *
 from moc.engine.Track import *
@@ -37,7 +37,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     @dataclass
     class UIState:
-        mouse_pos: (int, int) = (0, 0)
+        mouse_pos: QPointF = QPointF(0, 0)
         pads: np.array = np.zeros((4, 4), dtype=bool)
 
     def __init__(self, parent=None):
@@ -75,7 +75,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter.paintGL()
 
     def mousePressEvent(self, event):
-        self.ui_state.mouse_pos = (event.x(), event.y())
+        self.ui_state.mouse_pos = QPointF(event.x(), event.y())
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.arm_pressed_patterns()
@@ -88,7 +88,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             self.disarm_all_patterns()
 
     def mouseMoveEvent(self, event):
-        self.ui_state.mouse_pos = (event.x(), event.y())
+        self.ui_state.mouse_pos = QPointF(event.x(), event.y())
+        print(self.moc_painter.normalized_mouse_pos(self.ui_state.mouse_pos))
         self.repaint()
 
     def arm_pressed_patterns(self):
@@ -116,8 +117,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         return np.sum(self.ui_state.pads)
 
     def record_playback_tick(self, measure):
-        normalized_pos = self.painter.normalized_mouse_pos(self.ui_state.mouse_pos)
-        print(normalized_pos)
+        normalized_pos = self.moc_painter.normalized_mouse_pos(self.ui_state.mouse_pos)
+        # print(normalized_pos)
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
