@@ -6,7 +6,7 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtOpenGL
 
-from PySide6.QtCore import QRect, QPoint
+from PySide6.QtCore import QRectF, QPointF
 from PySide6.QtGui import QColor, QFont, QImage
 from PySide6.QtSvg import QSvgRenderer
 
@@ -82,13 +82,13 @@ class MotionControllerPainter:
             num_tracks = len(self.moc.tracks)
             for t in range(num_tracks):
                 track_width = self.moc.width() / num_tracks
-                column_region = QRect(t*track_width, 0, track_width, self.moc.height())
+                column_region = QRectF(t*track_width, 0, track_width, self.moc.height())
 
-                header_region = QRect(column_region)
+                header_region = QRectF(column_region)
                 header_region.setHeight(self.draw_params_dynamic['header_height'])
                 self.draw_track_header(painter, header_region, self.track_colors[t], self.moc.tracks[t])
 
-                footer_region = QRect(column_region)
+                footer_region = QRectF(column_region)
                 footer_region.setBottom(self.moc.height())
                 footer_region.setTop(self.moc.height() - self.draw_params_dynamic['footer_height'])
                 self.draw_track_footer(painter, footer_region, self.track_colors[t], self.moc.tracks[t])
@@ -103,14 +103,14 @@ class MotionControllerPainter:
         painter.setBrush(QtCore.Qt.black)
         painter.drawRect(region)
 
-        center_region = QRect(region)
+        center_region = QRectF(region)
         center_size = min(center_region.width(), center_region.height())
         center_region.setWidth(center_size)
         center_region.setHeight(center_size)
         center_region.moveCenter(region.center())
 
         orientation_size = center_size * (1-self.draw_params['circle_padding_rel'])
-        orientation_region = QRect(center_region)
+        orientation_region = QRectF(center_region)
         orientation_region.setWidth(orientation_size)
         orientation_region.setHeight(orientation_size)
         orientation_region.moveCenter(region.center())
@@ -130,7 +130,7 @@ class MotionControllerPainter:
 
         painter.setPen(QtCore.Qt.black)
 
-        text_region = QRect(region)
+        text_region = QRectF(region)
         text_region.adjust(self.draw_params_dynamic['left_padding'],
                            self.draw_params_dynamic['top_padding'], 0, 0)
 
@@ -153,7 +153,7 @@ class MotionControllerPainter:
         # set pen for text drawing
         painter.setPen(QtCore.Qt.black)
 
-        text_region = QRect(region)
+        text_region = QRectF(region)
         text_region.adjust(self.draw_params_dynamic['left_padding'],
                            self.draw_params_dynamic['top_padding'], 0, 0)
 
@@ -179,8 +179,8 @@ class MotionControllerPainter:
         #        marker_position = region.center() + self.angle_to_position(marker_angle)
 
         if track.position:
-            marker_position = QPoint(track.position[0], track.position[1])
-            marker_region = QRect()
+            marker_position = self.unnormalized_mouse_pos(track.position)
+            marker_region = QRectF()
             marker_region.setWidth(marker_size)
             marker_region.setHeight(marker_size)
             marker_region.moveCenter(marker_position)
@@ -192,3 +192,20 @@ class MotionControllerPainter:
     def center_region_contains(self, pos):
         region_center = self.draw_params_dynamic['region_center']
         return region_center.contains(pos)
+
+    def normalized_mouse_pos(self, pos):
+        region = self.draw_params_dynamic['circle_region']
+        p = pos - region.center()
+        p.setX(p.x() * 2.0 / region.width())
+        p.setY(p.y() * 2.0 / region.height())
+        return QPointF(p.x(), -p.y())
+
+    def unnormalized_mouse_pos(self, pos):
+        region = self.draw_params_dynamic['circle_region']
+        p = QPointF(pos)
+        p.setX(p.x() * region.width() / 2.0)
+        p.setY(-p.y() * region.height() / 2.0)
+        return p + region.center()
+
+    # def unnormalized_mouse_pos(self):
+    #     return self.ui_state.mouse_pos
