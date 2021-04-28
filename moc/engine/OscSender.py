@@ -17,16 +17,17 @@ class OscSender:
         length = math.sqrt(QPointF.dotProduct(clamped_pos, clamped_pos))
         if length > 1:
             clamped_pos /= length
-            print(clamped_pos)
 
         azimuth = -math.atan2(clamped_pos.x(), clamped_pos.y())
         azimuth = azimuth * 360 / (2 * math.pi)
-        print("azimuth: " + str(azimuth))
+        # print("azimuth: " + str(azimuth))
 
         length_sqr = QPointF.dotProduct(clamped_pos, clamped_pos)
+        if length_sqr > 1.0:
+            length_sqr = 1.0
         elevation = math.atan2(math.sqrt((1 - length_sqr)), math.sqrt(length_sqr))
         elevation = elevation * 360 / (2 * math.pi)
-        print("elevation: " + str(elevation))
+        # print("elevation: " + str(elevation))
 
         self.client.send_message("/StereoEncoder/azimuth", azimuth)
         self.client.send_message("/StereoEncoder/elevation", elevation)
