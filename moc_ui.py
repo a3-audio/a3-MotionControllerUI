@@ -55,10 +55,10 @@ if __name__ == "__main__":
         window.show()
     else:
         window = QMainWindow()
-        moc = moc.MotionController.MotionController()
+        motion_controller = moc.MotionController.MotionController()
 
-        adapter = moc.InputAdapterSerial(moc, args.serial_device, args.serial_baudrate)
-        window.setCentralWidget(moc)
+        adapter = moc.InputAdapterSerial(motion_controller, args.serial_device, args.serial_baudrate)
+        window.setCentralWidget(motion_controller)
         window.showFullScreen()
 
     # create track objects and pass to display widget
@@ -72,9 +72,9 @@ if __name__ == "__main__":
         track.ambi_params.width = 45
         tracks.append(track)
 
-    moc = window.findChild(moc.MotionController.MotionController)
-    moc.stereo_encoder_ip = args.stereo_encoder_ip
-    moc.stereo_encoder_base_port = args.stereo_encoder_base_port
-    moc.set_tracks(tracks)
+    motion_controller = window.findChild(moc.MotionController.MotionController)
+    motion_controller.stereo_encoder_ip = args.stereo_encoder_ip
+    motion_controller.stereo_encoder_base_port = args.stereo_encoder_base_port
+    motion_controller.set_tracks(tracks)
 
     sys.exit(app.exec_())
