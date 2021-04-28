@@ -57,7 +57,7 @@ if __name__ == "__main__":
         window = QMainWindow()
         motion_controller = moc.MotionController.MotionController()
 
-        adapter = moc.InputAdapterSerial(motion_controller, args.serial_device, args.serial_baudrate)
+        adapter = moc.InputAdapterSerial.InputAdapterSerial(motion_controller, args.serial_device, args.serial_baudrate)
         window.setCentralWidget(motion_controller)
         window.showFullScreen()
 
