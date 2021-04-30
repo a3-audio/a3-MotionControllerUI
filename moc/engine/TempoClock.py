@@ -29,7 +29,7 @@ class TempoClock(QObject):
     beat = Signal(Measure)
     bar = Signal(Measure)
 
-    TICKS_PER_BEAT = 64
+    TICKS_PER_BEAT = 32
     BEATS_PER_BAR  = 4
 
     # update rate (ms)

@@ -1,4 +1,5 @@
 import time
+import math
 
 import numpy as np
 
@@ -10,6 +11,7 @@ from moc.engine.Track import *
 from moc.engine.TempoClock import *
 from moc.engine.MotionRecorder import *
 from moc.engine.MotionPlayer import *
+from moc.engine.OscSender import *
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
@@ -45,6 +47,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         self.tracks = None
 
+        self.stereo_encoder_ip = ""
+        self.stereo_encoder_base_port = 0
+
         self.ui_state = MotionController.UIState()
         self.interaction_params = {
             'double_press_time' : 0.250,
@@ -62,14 +67,21 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.clock.tick.connect(self.record_playback_tick)
         self.clock.beat.connect(self.update_pad_leds)
 
-        self.recorder.recording_state.connect(self.recording_state_update)
-        self.player.track_position.connect(self.track_position_update)
+        self.recorder.recording_state.connect(self.recording_state_changed)
 
     def set_tracks(self, tracks):
         self.tracks = tracks
         self.moc_painter.set_tracks(tracks)
         self.recorder.set_tracks(tracks)
         self.player.set_tracks(tracks)
+
+        self.osc_sender = OscSender(len(self.tracks),
+                                    self.stereo_encoder_ip,
+                                    self.stereo_encoder_base_port)
+
+        for track in self.tracks:
+            track.position_changed.connect(self.track_position_changed)
+            track.position_changed.connect(self.osc_sender.track_position_changed)
 
     def paintGL(self):
         self.moc_painter.paintGL()
@@ -120,11 +132,10 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
-    def recording_state_update(self, recording):
+    def recording_state_changed(self, recording):
         self.update_pad_leds()
 
-    def track_position_update(self, track, position):
-        track.position = position
+    def track_position_changed(self, track, pos):
         self.repaint()
 
     @Slot(int, int, float)

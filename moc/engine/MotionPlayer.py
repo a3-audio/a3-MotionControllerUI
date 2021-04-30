@@ -4,9 +4,6 @@ from moc.engine.TempoClock import *
 from moc.engine.Pattern import *
 
 class MotionPlayer(QObject):
-    # track object, position tuple
-    track_position = Signal(object, object)
-
     @dataclass
     class PlaybackState:
         prepared: bool = False
@@ -39,10 +36,10 @@ class MotionPlayer(QObject):
                 playback_state.playing = True
                 print("playback started for track {}".format(track))
             if playback_state.playing:
-                position = self.get_position(track, measure)
-                self.track_position.emit(track, position)
+                position = self.get_playback_position(track, measure)
+                track.set_position(position)
 
-    def get_position(self, track, measure):
+    def get_playback_position(self, track, measure):
         active_pattern = self.playback_states[track].active_pattern
         tick = active_pattern.tick_in_pattern_relative(measure, self.playback_states[track].measure_start)
         return active_pattern.ticks[tick]
