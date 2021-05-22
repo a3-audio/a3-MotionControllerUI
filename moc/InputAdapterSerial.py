@@ -32,6 +32,7 @@ class InputAdapterSerial(QThread):
 
         def connection_made(self, transport):
             self.transport = transport
+            self.transport.serial.rts = False
             print('serial port opened', transport)
 
         def connection_lost(self, exc):
@@ -160,6 +161,10 @@ class InputAdapterSerial(QThread):
         self.moc = moc
         self.serialDevice = serialDevice
         self.baudRate = baudRate
+        self.coro = None
+
+        print("connecting pad_led signal")
+        self.moc.pad_led.connect(self.handle_pad_led, QtCore.Qt.QueuedConnection)
 
         if serialDevice != "":
             self.start()
@@ -168,9 +173,18 @@ class InputAdapterSerial(QThread):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            coro = serial_asyncio.create_serial_connection(loop, lambda: InputAdapterSerial.SerialProtocol(self.moc), self.serialDevice, baudrate=self.baudRate)
+            self.protocol = InputAdapterSerial.SerialProtocol(self.moc)
+            coro = serial_asyncio.create_serial_connection(loop, lambda: self.protocol, self.serialDevice, baudrate=self.baudRate)
             loop.run_until_complete(coro)
             loop.run_forever()
         except Exception as e:
             print(e)
             os._exit(1)
+
+    def handle_pad_led(self, channel, row, color):
+        print("InputAdapterSerial::handle_pad_led")
+        print("writing LED")
+        print(self.protocol)
+        print(self.protocol.transport)
+        # self.protocol.transport.write(b'L,1,255,255,255\n')
+        self.protocol.transport.write(b'L1\n')
