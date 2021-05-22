@@ -162,8 +162,6 @@ class InputAdapterSerial(QThread):
         self.serialDevice = serialDevice
         self.baudRate = baudRate
         self.coro = None
-
-        print("connecting pad_led signal")
         self.moc.pad_led.connect(self.handle_pad_led, QtCore.Qt.QueuedConnection)
 
         if serialDevice != "":
@@ -182,9 +180,6 @@ class InputAdapterSerial(QThread):
             os._exit(1)
 
     def handle_pad_led(self, channel, row, color):
-        print("InputAdapterSerial::handle_pad_led")
-        print("writing LED")
-        print(self.protocol)
-        print(self.protocol.transport)
-        # self.protocol.transport.write(b'L,1,255,255,255\n')
-        self.protocol.transport.write(b'L1\n')
+        index = row * 4 + channel
+        message = "L," + str(index) + "," + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + "\n"
+        self.protocol.transport.write(message.encode('utf-8'))

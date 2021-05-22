@@ -185,7 +185,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def pad_released(self, channel, row):
         # print("channel " + str(channel) + " pad " + str(row) + " released ")
         self.ui_state.pads[channel][row] = False
-        self.pad_led.emit(channel, row, False)
         self.update_pad_leds()
 
     def update_pad_leds(self, measure=None):
@@ -221,5 +220,4 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 elif pattern.length != 0:
                     color = MotionController.led_color_idle
 
-                print("emitting pad_led")
                 self.pad_led.emit(channel, row, color)
