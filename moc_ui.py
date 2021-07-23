@@ -19,12 +19,13 @@ import moc.engine.Track
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='AAA Motion Controller.')
+    parser = argparse.ArgumentParser(description='A3motion Controller.')
     parser.add_argument("--develop", help="run in development mode with mockup UI", action="store_true")
     parser.add_argument("--serial_device", help="the serial port device file to use", default="")
     parser.add_argument("--serial_baudrate", help="the serial port baud rate to use", default=115200)
-    parser.add_argument("--stereo_encoder_ip", help="address of the host running the IEM StereoEncoders", default="127.0.0.1")
-    parser.add_argument("--stereo_encoder_base_port", help="base port of the StereoEncoder instances", type=int, default=1337)
+    parser.add_argument("--server_ip", help="address of the A3core audio server", default="127.0.0.1")
+    parser.add_argument("--server_port", help="port of the OSC control server", type=int, default=9000)
+    parser.add_argument("--encoder_base_port", help="base port of the StereoEncoder instances", type=int, default=1337)
     args = parser.parse_args()
 
     # print(args)
@@ -73,8 +74,9 @@ if __name__ == "__main__":
         tracks.append(track)
 
     motion_controller = window.findChild(moc.MotionController.MotionController)
-    motion_controller.stereo_encoder_ip = args.stereo_encoder_ip
-    motion_controller.stereo_encoder_base_port = args.stereo_encoder_base_port
+    motion_controller.server_ip = args.server_ip
+    motion_controller.server_port = args.server_port
+    motion_controller.encoder_base_port = args.encoder_base_port
     motion_controller.set_tracks(tracks)
 
     sys.exit(app.exec_())

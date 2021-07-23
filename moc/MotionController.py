@@ -47,8 +47,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         self.tracks = None
 
-        self.stereo_encoder_ip = ""
-        self.stereo_encoder_base_port = 0
+        self.server_ip = ""
+        self.server_port = 0
+        self.encoder_base_port = 0
 
         self.ui_state = MotionController.UIState()
         self.interaction_params = {
@@ -76,8 +77,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.player.set_tracks(tracks)
 
         self.osc_sender = OscSender(len(self.tracks),
-                                    self.stereo_encoder_ip,
-                                    self.stereo_encoder_base_port)
+                                    self.server_ip,
+                                    self.server_port,
+                                    self.encoder_base_port)
 
         for track in self.tracks:
             track.position_changed.connect(self.track_position_changed)
@@ -142,9 +144,13 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
         if row == 0:
-            self.tracks[track].ambi_params.width = value*180
+            width = value*180
+            self.tracks[track].ambi_params.width = width
+            self.osc_sender.send_width(track, width)
         if row == 1:
-            self.tracks[track].ambi_params.side = value*9
+            side = value*9
+            self.tracks[track].ambi_params.side = side
+            self.osc_sender.send_side(track, side)
         self.repaint()
 
     def detect_double_press(self, channel):
