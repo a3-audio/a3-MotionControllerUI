@@ -1,3 +1,4 @@
+# This file is a part of A³Pandemic. License is GPLv3: https://github.com/ambisonics-audio-association/Ambijockey/blob/main/COPYING
 from dataclasses import dataclass
 from enum import Enum
 
