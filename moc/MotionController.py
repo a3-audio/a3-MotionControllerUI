@@ -145,7 +145,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
         if row == 0:
             width = value
-            widthTrack = np.interp(value, [0,1], [-360,360])
+            widthTrack = np.interp(value, [0,1], [30,145])
             self.tracks[track].ambi_params.width = widthTrack
             self.osc_sender.send_width(track, width)
         if row == 1:
