@@ -144,12 +144,13 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
         if row == 0:
-            width = value*180
-            self.tracks[track].ambi_params.width = width
+            width = value
+            widthTrack = np.interp(value, [0,1], [-360,360])
+            self.tracks[track].ambi_params.width = widthTrack
             self.osc_sender.send_width(track, width)
         if row == 1:
-            side = value*9
-            self.tracks[track].ambi_params.side = side
+            side = value
+            self.tracks[track].ambi_params.side = side * 6
             self.osc_sender.send_side(track, side)
         self.repaint()
 
