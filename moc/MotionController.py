@@ -227,4 +227,4 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 elif pattern.length != 0:
                     color = MotionController.led_color_idle
 
-                self.pad_led.emit(channel, row, color)
+                # self.pad_led.emit(channel, row, color)
