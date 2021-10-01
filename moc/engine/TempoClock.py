@@ -29,11 +29,11 @@ class TempoClock(QObject):
     beat = Signal(Measure)
     bar = Signal(Measure)
 
-    TICKS_PER_BEAT = 16
+    TICKS_PER_BEAT = 32
     BEATS_PER_BAR  = 4
 
     # update rate (ms)
-    TIMER_INTERVAL = 1
+    TIMER_INTERVAL = 2
 
     def __init__(self):
         super().__init__()
