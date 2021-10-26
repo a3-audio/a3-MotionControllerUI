@@ -33,7 +33,7 @@ class MotionControllerPainter:
         self.pen_outlines.setWidth(5)
         self.pen_outlines.setBrush(QtCore.Qt.red)
 
-        self.svg_render_orientation = QSvgRenderer("/home/aaa/Ambijockey/Controller_Motion/software/MotionControllerUI/resources/orientation.svg")
+        self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
 
     def set_tracks(self, tracks):
         self.tracks = tracks
