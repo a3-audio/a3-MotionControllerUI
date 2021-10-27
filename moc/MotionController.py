@@ -144,14 +144,16 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def poti_changed(self, track, row, value):
         print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
         if row == 0:
-            width = value
-            widthTrack = np.interp(value, [0,1], [30,145])
-            self.tracks[track].ambi_params.width = widthTrack
-            self.osc_sender.send_width(track, width)
+            # TODO: this mapping should happen at a central location, see
+            # https://github.com/ambisonic-audio-adventures/Ambijockey/issues/5
+            width = np.interp(value, [0,1], [30,145])
+            self.tracks[track].ambi_params.width = width
+            self.osc_sender.send_width(track, value)
         if row == 1:
-            side = value
-            self.tracks[track].ambi_params.side = side * 6
-            self.osc_sender.send_side(track, side)
+            # TODO: same here
+            side = value * 6
+            self.tracks[track].ambi_params.side = side
+            self.osc_sender.send_side(track, value)
         self.repaint()
 
     def detect_double_press(self, channel):
