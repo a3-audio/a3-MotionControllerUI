@@ -47,7 +47,7 @@ class PlaybackParams:
 
 @dataclass
 class RecordParams:
-    length: int = 16
+    length: int = 8
 
 class Track(QObject):
     # track object, position tuple

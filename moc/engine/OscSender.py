@@ -22,10 +22,11 @@ from pythonosc import udp_client
 from PySide6.QtCore import QPointF
 
 class OscSender:
-    def __init__(self, num_tracks, ip, base_port):
-        self.clients = []
+    def __init__(self, num_tracks, ip, port, encoder_base_port):
+        self.client = udp_client.SimpleUDPClient(ip, port)
+        self.encoder_clients = []
         for t in range(num_tracks):
-            self.clients.append(udp_client.SimpleUDPClient(ip, base_port + t))
+            self.encoder_clients.append(udp_client.SimpleUDPClient(ip, encoder_base_port + t))
 
     def track_position_changed(self, track, pos):
         if pos != None:
@@ -48,5 +49,11 @@ class OscSender:
         elevation = elevation * 360 / (2 * math.pi)
         # print("elevation: " + str(elevation))
 
-        self.clients[index].send_message("/StereoEncoder/azimuth", azimuth)
-        self.clients[index].send_message("/StereoEncoder/elevation", elevation)
+        self.encoder_clients[index].send_message("/StereoEncoder/azimuth", azimuth)
+        self.encoder_clients[index].send_message("/StereoEncoder/elevation", elevation)
+
+    def send_width(self, index, width):
+        self.client.send_message(f"/moc/channel/{index}/width", width)
+
+    def send_side(self, index, side):
+        self.client.send_message(f"/moc/channel/{index}/side", side)

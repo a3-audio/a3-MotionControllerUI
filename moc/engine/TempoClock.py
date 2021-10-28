@@ -50,7 +50,7 @@ class TempoClock(QObject):
     BEATS_PER_BAR  = 4
 
     # update rate (ms)
-    TIMER_INTERVAL = 5
+    TIMER_INTERVAL = 2
 
     def __init__(self):
         super().__init__()
