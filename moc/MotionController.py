@@ -30,6 +30,12 @@ from moc.engine.MotionRecorder import *
 from moc.engine.MotionPlayer import *
 from moc.engine.OscSender import *
 
+led_color_empty = [0, 0, 0]
+led_color_idle = [150, 150, 150]
+led_color_recording = [255, 0, 0]
+led_color_recording_alt = [255, 100, 100]
+led_color_playback = [255, 255, 255]
+
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
 
@@ -48,16 +54,11 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     pad_led = Signal(int, int, object)
 
-    led_color_empty = (0, 0, 0)
-    led_color_idle = (150, 150, 150)
-    led_color_recording = (255, 0, 0)
-    led_color_recording_alt = (255, 100, 100)
-    led_color_playback = (255, 255, 255)
-
     @dataclass
     class UIState:
         mouse_pos: QPointF = QPointF(0, 0)
         pads: np.array = np.zeros((4, 4), dtype=bool)
+        leds: np.array = np.full((4, 4, 3), led_color_idle)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -224,26 +225,28 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 pattern = track.patterns[row]
 
                 # default: empty pattern slot
-                color = MotionController.led_color_empty
+                color = led_color_empty
 
                 # armed patterns
                 if [channel, row] in self.pressed_pad_indices().tolist():
                     # before recording light up constantly
                     if not self.recorder.is_recording():
-                        color = MotionController.led_color_recording
+                        color = led_color_recording
                     # while recording blink armed patterns
                     else:
-                        color = (MotionController.led_color_recording
+                        color = (led_color_recording
                                  if measure.beat % 2 else
-                                 MotionController.led_color_recording_alt)
+                                 led_color_recording_alt)
 
                 # pattern is playing
                 elif (self.player.playback_states[track].playing and
                       self.player.playback_states[track].active_pattern == pattern):
-                    color = MotionController.led_color_playback
+                    color = led_color_playback
 
                 # pattern is not playing
                 elif pattern.length != 0:
-                    color = MotionController.led_color_idle
+                    color = led_color_idle
 
-                #self.pad_led.emit(channel, row, color)
+                if (color != self.ui_state.leds[row, channel]).any():
+                    self.pad_led.emit(channel, row, color)
+                    self.ui_state.leds[row, channel] = color

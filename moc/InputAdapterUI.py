@@ -110,7 +110,7 @@ class InputAdapterUI(QObject):
         self.moc.pad_released(channel, row)
 
     def handle_pad_led(self, channel, row, color):
-        color_string = "rgb{}".format(color)
+        color_string = "rgb({},{},{})".format(color[0], color[1], color[2])
         style = "QPushButton {background-color: " + color_string + "}"
 
         button_name = f'button{channel}{row}'
