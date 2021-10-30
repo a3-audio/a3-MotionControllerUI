@@ -130,6 +130,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         for index in arm_indices:
             channel = self.channels[index[0]]
             channel.patterns[index[1]].arm(channel.record_params.length)
+            print(f"armed pattern {index[0]}.{index[1]}")
 
     def prepare_play_pressed_patterns(self, measure):
         play_indices = self.pressed_pad_indices()
