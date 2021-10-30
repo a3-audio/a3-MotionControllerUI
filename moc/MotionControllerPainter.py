@@ -52,14 +52,14 @@ class MotionControllerPainter:
 
         self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
 
-    def set_tracks(self, tracks):
-        self.tracks = tracks
-        self.track_colors = []
-        num_tracks = len(self.moc.tracks)
-        for t in range(num_tracks):
+    def set_channels(self, channels):
+        self.channels = channels
+        self.channel_colors = []
+        num_channels = len(self.moc.channels)
+        for t in range(num_channels):
             color = QColor()
-            color.setHsl(int(255/num_tracks*t), 100, 150)
-            self.track_colors.append(color);
+            color.setHsl(int(255/num_channels*t), 100, 150)
+            self.channel_colors.append(color);
 
     def abs_to_rel(self, x, y):
         return (x / self.moc.width(), y / self.moc.height())
@@ -95,20 +95,20 @@ class MotionControllerPainter:
         painter = QtGui.QPainter(self.moc)
         painter.setFont(QtGui.QFont('monospace', self.moc.height() * self.draw_params['font_scale']))
 
-        if self.moc.tracks:
-            num_tracks = len(self.moc.tracks)
-            for t in range(num_tracks):
-                track_width = self.moc.width() / num_tracks
-                column_region = QRectF(t*track_width, 0, track_width, self.moc.height())
+        if self.moc.channels:
+            num_channels = len(self.moc.channels)
+            for t in range(num_channels):
+                channel_width = self.moc.width() / num_channels
+                column_region = QRectF(t*channel_width, 0, channel_width, self.moc.height())
 
                 header_region = QRectF(column_region)
                 header_region.setHeight(self.draw_params_dynamic['header_height'])
-                self.draw_track_header(painter, header_region, self.track_colors[t], self.moc.tracks[t])
+                self.draw_channel_header(painter, header_region, self.channel_colors[t], self.moc.channels[t])
 
                 footer_region = QRectF(column_region)
                 footer_region.setBottom(self.moc.height())
                 footer_region.setTop(self.moc.height() - self.draw_params_dynamic['footer_height'])
-                self.draw_track_footer(painter, footer_region, self.track_colors[t], self.moc.tracks[t])
+                self.draw_channel_footer(painter, footer_region, self.channel_colors[t], self.moc.channels[t])
 
         region = self.moc.rect()
         region.adjust(0, self.draw_params_dynamic['header_height'],
@@ -136,11 +136,11 @@ class MotionControllerPainter:
         self.draw_params_dynamic['circle_region'] = orientation_region
         self.draw_params_dynamic['circle_radius'] = orientation_size / 2
 
-        if self.moc.tracks:
-            for t in range(len(self.moc.tracks)):
-                self.draw_track_center(painter, center_region, self.track_colors[t], self.moc.tracks[t])
+        if self.moc.channels:
+            for t in range(len(self.moc.channels)):
+                self.draw_channel_center(painter, center_region, self.channel_colors[t], self.moc.channels[t])
 
-    def draw_track_header(self, painter, region, color, track):
+    def draw_channel_header(self, painter, region, color, channel):
         painter.setBrush(QtGui.QBrush(color))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
@@ -151,18 +151,18 @@ class MotionControllerPainter:
         text_region.adjust(self.draw_params_dynamic['left_padding'],
                            self.draw_params_dynamic['top_padding'], 0, 0)
 
-        ambi_mode_string = track.ambi_params.mode.name
+        ambi_mode_string = channel.ambi_params.mode.name
         painter.drawText(text_region, "Mode: " + ambi_mode_string)
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        width_string = f'Width: {track.ambi_params.width:.0f}°'
+        width_string = f'Width: {channel.ambi_params.width:.0f}°'
         painter.drawText(text_region, width_string)
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        side_string = f'Side: {track.ambi_params.side:.1f}dB'
+        side_string = f'Side: {channel.ambi_params.side:.1f}dB'
         painter.drawText(text_region, side_string)
 
-    def draw_track_footer(self, painter, region, color, track):
+    def draw_channel_footer(self, painter, region, color, channel):
         painter.setBrush(QtGui.QBrush(color))
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRect(region)
@@ -174,17 +174,17 @@ class MotionControllerPainter:
         text_region.adjust(self.draw_params_dynamic['left_padding'],
                            self.draw_params_dynamic['top_padding'], 0, 0)
 
-        painter.drawText(text_region, "Length: " + str(track.record_params.length))
+        painter.drawText(text_region, "Length: " + str(channel.record_params.length))
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        playback_mode_string = track.playback_params.mode.name
+        playback_mode_string = channel.playback_params.mode.name
         painter.drawText(text_region, "Loop: " + playback_mode_string)
 
-    def draw_track_center(self, painter, region, color, track):
+    def draw_channel_center(self, painter, region, color, channel):
         marker_size = self.draw_params['marker_size_rel'] * region.width()
 
-        # start_angle = self.azimuth_to_deg(track.ambi_params.azimuth + track.ambi_params.width/2) * 16
-        # span_angle = track.ambi_params.width * 16
+        # start_angle = self.azimuth_to_deg(channel.ambi_params.azimuth + channel.ambi_params.width/2) * 16
+        # span_angle = channel.ambi_params.width * 16
 
         # pen = QtGui.QPen()
         # pen.setWidth(marker_size / 3)
@@ -192,11 +192,11 @@ class MotionControllerPainter:
         # painter.setPen(pen)
         # painter.drawArc(self.draw_params_dynamic['circle_region'], start_angle, span_angle)
 
-        #        marker_angle = self.azimuth_to_rad(track.ambi_params.azimuth)
+        #        marker_angle = self.azimuth_to_rad(channel.ambi_params.azimuth)
         #        marker_position = region.center() + self.angle_to_position(marker_angle)
 
-        if track.position:
-            marker_position = self.unnormalized_mouse_pos(track.position)
+        if channel.position:
+            marker_position = self.unnormalized_mouse_pos(channel.position)
             marker_region = QRectF()
             marker_region.setWidth(marker_size)
             marker_region.setHeight(marker_size)

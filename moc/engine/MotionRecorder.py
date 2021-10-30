@@ -27,13 +27,13 @@ class MotionRecorder(QObject):
     def __init__(self):
         super().__init__()
 
-        self.tracks = []
+        self.channels = []
         self.prepared = False
         self.recording = False
         self.measure_start = TempoClock.Measure()
 
-    def set_tracks(self, tracks):
-        self.tracks = tracks
+    def set_channels(self, channels):
+        self.channels = channels
 
     def prepare_recording(self, measure):
         self.measure_start = measure
@@ -55,8 +55,8 @@ class MotionRecorder(QObject):
             print("recording started")
 
         if self.recording:
-            for track in self.tracks:
-                for pattern in track.patterns:
+            for channel in self.channels:
+                for pattern in channel.patterns:
                     if pattern.armed:
                         tick_to_write = pattern.tick_in_pattern_relative(measure, self.measure_start)
                         pattern.ticks[tick_to_write] = position

@@ -24,7 +24,7 @@ from PySide6 import QtCore, QtGui, QtWidgets, QtOpenGLWidgets
 from PySide6.QtCore import QObject, QThread, Signal, Slot, QPointF
 
 from moc.MotionControllerPainter import *
-from moc.engine.Track import *
+from moc.engine.Channel import *
 from moc.engine.TempoClock import *
 from moc.engine.MotionRecorder import *
 from moc.engine.MotionPlayer import *
@@ -44,7 +44,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     mockup UI (qt events), and the the server backend (OSC).
 
     It handles the UI state logic and delegates the specific tasks
-    (drawing, recording and playback of tracks, etc.) to designated
+    (drawing, recording and playback of channels, etc.) to designated
     classes.
 
     While being a QOpenGLWidget to receive input events, the drawing
@@ -63,7 +63,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.tracks = None
+        self.channels = None
 
         self.server_ip = ""
         self.server_port = 0
@@ -90,20 +90,20 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
         self.recorder.recording_state.connect(self.recording_state_changed)
 
-    def set_tracks(self, tracks):
-        self.tracks = tracks
-        self.moc_painter.set_tracks(tracks)
-        self.recorder.set_tracks(tracks)
-        self.player.set_tracks(tracks)
+    def set_channels(self, channels):
+        self.channels = channels
+        self.moc_painter.set_channels(channels)
+        self.recorder.set_channels(channels)
+        self.player.set_channels(channels)
 
-        self.osc_sender = OscSender(len(self.tracks),
+        self.osc_sender = OscSender(len(self.channels),
                                     self.server_ip,
                                     self.server_port,
                                     self.encoder_base_port)
 
-        for track in self.tracks:
-            track.position_changed.connect(self.track_position_changed)
-            track.position_changed.connect(self.osc_sender.track_position_changed)
+        for channel in self.channels:
+            channel.position_changed.connect(self.channel_position_changed)
+            channel.position_changed.connect(self.osc_sender.channel_position_changed)
 
     def paintGL(self):
         self.moc_painter.paintGL()
@@ -114,7 +114,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.arm_pressed_patterns()
                 self.recorder.prepare_recording(self.clock.measure.next_downbeat())
-                self.play_pressed_patterns()
+                self.prepare_play_pressed_patterns(self.clock.measure.next_downbeat())
 
     def mouseReleaseEvent(self, event):
         if self.recorder.is_recording():
@@ -128,20 +128,26 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def arm_pressed_patterns(self):
         arm_indices = self.pressed_pad_indices()
         for index in arm_indices:
-            track = self.tracks[index[0]]
-            track.patterns[index[1]].arm(track.record_params.length)
+            channel = self.channels[index[0]]
+            channel.patterns[index[1]].arm(channel.record_params.length)
 
-    def play_pressed_patterns(self):
+    def prepare_play_pressed_patterns(self, measure):
         play_indices = self.pressed_pad_indices()
         for index in play_indices:
-            track = self.tracks[index[0]]
-            self.player.set_active_pattern(track, track.patterns[index[1]])
-            self.player.prepare_playback(track, self.clock.measure.next_downbeat())
+            channel = self.channels[index[0]]
+            pattern_index=index[1]
+            self.player.prepare_play_pattern(channel, pattern_index, measure)
 
+    def prepare_stop_pressed_patterns(self):
+        stop_indices = self.pressed_pad_indices()
+        for index in stop_indices:
+            channel = self.channels[index[0]]
+            self.player.prepare_play_stop(channel, self.clock.measure.next_downbeat())
+            
     def disarm_all_patterns(self):
         for channel in range(4):
             for pattern in range(4):
-                self.tracks[channel].patterns[pattern].disarm()
+                self.channels[channel].patterns[pattern].disarm()
 
     def pressed_pad_indices(self):
         return np.argwhere(self.ui_state.pads == True)
@@ -157,23 +163,23 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def recording_state_changed(self, recording):
         self.update_pad_leds()
 
-    def track_position_changed(self, track, pos):
+    def channel_position_changed(self, channel, pos):
         self.repaint()
 
     @Slot(int, int, float)
-    def poti_changed(self, track, row, value):
-        print("track " + str(track) + " poti " + str(row) + " value changed: " + str(value))
+    def poti_changed(self, channel, row, value):
+        print("channel " + str(channel) + " poti " + str(row) + " value changed: " + str(value))
         if row == 0:
             # TODO: this mapping should happen at a central location, see
             # https://github.com/ambisonic-audio-adventures/Ambijockey/issues/5
             width = np.interp(value, [0,1], [30,145])
-            self.tracks[track].ambi_params.width = width
-            self.osc_sender.send_width(track, value)
+            self.channels[channel].ambi_params.width = width
+            self.osc_sender.send_width(channel, value)
         if row == 1:
             # TODO: same here
             side = value * 6
-            self.tracks[track].ambi_params.side = side
-            self.osc_sender.send_side(track, value)
+            self.channels[channel].ambi_params.side = side
+            self.osc_sender.send_side(channel, value)
         self.repaint()
 
     def clear_press_times_encoder(self):
@@ -227,6 +233,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             return
         self.ui_state.pads[channel][row] = True
         self.update_pad_leds()
+        # self.prepare_stop_pressed_patterns()
 
     @Slot(int, int)
     def pad_double_pressed(self, channel, row):
@@ -243,16 +250,13 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             measure = self.clock.measure
         print(measure)
 
-        for channel in range(4):
+        for channel in self.channels:
             for row in range(4):
-                track = self.tracks[channel]
-                pattern = track.patterns[row]
-
                 # default: empty pattern slot
                 color = led_color_empty
 
                 # armed patterns
-                if [channel, row] in self.pressed_pad_indices().tolist():
+                if [channel.index, row] in self.pressed_pad_indices().tolist():
                     # before recording light up constantly
                     if not self.recorder.is_recording():
                         color = led_color_recording
@@ -263,15 +267,14 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                                  led_color_recording_alt)
 
                 # pattern is playing
-                elif (self.player.playback_states[track].playing and
-                      self.player.playback_states[track].active_pattern == pattern):
+                elif self.player.is_pattern_playing(channel, row):
                     color = led_color_playback
 
-                # pattern is not playing
-                elif pattern.length != 0:
+                # pattern is not empty
+                elif channel.patterns[row].length != 0:
                     color = led_color_idle
 
                 # emit signal if cached state differs
-                if (color != self.ui_state.leds[row, channel]).any():
-                    self.pad_led.emit(channel, row, color)
-                    self.ui_state.leds[row, channel] = color
+                if (color != self.ui_state.leds[row, channel.index]).any():
+                    self.pad_led.emit(channel.index, row, color)
+                    self.ui_state.leds[row, channel.index] = color

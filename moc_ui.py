@@ -31,7 +31,7 @@ import moc.InputAdapterSerial
 import moc.widgets.QuadraticDial
 import moc.widgets.QuadraticPushButton
 
-import moc.engine.Track
+import moc.engine.Channel
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -79,21 +79,21 @@ if __name__ == "__main__":
         window.setCentralWidget(motion_controller)
         window.showFullScreen()
 
-    # create track objects and pass to display widget
-    tracks = []
-    num_tracks = 4
-    for t in range(num_tracks):
-        track = moc.engine.Track.Track(t)
-        # evenly space tracks along circle for initialization
-        track_angle_interval = (360/num_tracks)
-        track.ambi_params.azimuth = -180 + track_angle_interval/2 + t*track_angle_interval
-        track.ambi_params.width = 45
-        tracks.append(track)
+    # create channel objects and pass to display widget
+    channels = []
+    num_channels = 4
+    for c in range(num_channels):
+        channel = moc.engine.Channel.Channel(c)
+        # evenly space channels along circle for initialization
+        channel_angle_interval = (360/num_channels)
+        channel.ambi_params.azimuth = -180 + channel_angle_interval/2 + c*channel_angle_interval
+        channel.ambi_params.width = 45
+        channels.append(channel)
 
     motion_controller = window.findChild(moc.MotionController.MotionController)
     motion_controller.server_ip = args.server_ip
     motion_controller.server_port = args.server_port
     motion_controller.encoder_base_port = args.encoder_base_port
-    motion_controller.set_tracks(tracks)
+    motion_controller.set_channels(channels)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
