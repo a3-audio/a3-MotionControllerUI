@@ -276,22 +276,23 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                                  led_color_recording_alt)
                     else:
                         color = led_color_recording
-                # otherwise light up as selected if pressed
+                # otherwise light up as selected if pressed,
+                # depending on playback state
                 elif [channel.index, row] in self.pressed_pad_indices().tolist():
                     if self.player.is_pattern_playing(channel, row):
                         color = led_color_playback_selected
                     else:
                         color = led_color_selected
 
-                # pattern is playing
+                # pattern is not pressed but playing
                 elif self.player.is_pattern_playing(channel, row):
                     color = led_color_playback
 
-                # pattern is not empty
+                # pattern is not playing and not empty
                 elif not channel.is_pattern_empty(row):
                     color = led_color_idle
 
-                # emit signal if cached state differs
+                # emit signal only if cached state differs
                 if (color != self.ui_state.leds[row, channel.index]).any():
                     self.pad_led.emit(channel.index, row, color)
                     self.ui_state.leds[row, channel.index] = color
