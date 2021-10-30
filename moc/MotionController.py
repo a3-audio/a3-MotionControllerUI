@@ -74,7 +74,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             'double_press_time' : 0.250,
         }
 
-        self.encoder_press_times = {}
+        self.clear_press_times_encoder()
+        self.clear_press_times_pads()
+
         self.mouse_pos = (0, 0)
 
         self.moc_painter = MotionControllerPainter(self)
@@ -174,20 +176,36 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             self.osc_sender.send_side(track, value)
         self.repaint()
 
-    def detect_double_press(self, channel):
+    def clear_press_times_encoder(self):
+        self.press_times_encoder = np.zeros((4))
+
+    def clear_press_times_pads(self):
+        self.press_times_pads = np.zeros((4, 4))
+
+    def detect_double_press_encoder(self, channel):
         press_time = time.time()
-        if self.encoder_press_times.get(channel) and self.encoder_press_times[channel] + self.interaction_params['double_press_time'] >= press_time:
+        if self.encoder_press_times[channel] + self.interaction_params['double_press_time'] >= press_time:
             self.encoder_double_pressed(channel)
-            self.encoder_press_times.clear()
+            self.clear_press_times_encoder()
             return True
         else:
-            self.encoder_press_times[channel] = press_time
+            self.press_times_encoder[channel] = press_time
+        return False
+
+    def detect_double_press_pads(self, channel, row):
+        press_time = time.time()
+        if self.press_times_pads[channel, row] + self.interaction_params['double_press_time'] >= press_time:
+            self.pad_double_pressed(channel, row)
+            self.clear_press_times_pads()
+            return True
+        else:
+            self.press_times_pads[channel, row] = press_time
         return False
 
     @Slot(int)
     def encoder_pressed(self, channel):
         print("channel " + str(channel) + " encoder pressed")
-        # if self.detect_double_press(channel):
+        # if self.detect_double_press_encoder(channel):
         #     return
 
     @Slot(int)
@@ -205,8 +223,14 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     @Slot(int, int)
     def pad_pressed(self, channel, row):
         # print("channel " + str(channel) + " pad " + str(row) + " pressed ")
+        if self.detect_double_press_pads(channel, row):
+            return
         self.ui_state.pads[channel][row] = True
         self.update_pad_leds()
+
+    @Slot(int, int)
+    def pad_double_pressed(self, channel, row):
+        print(f"pad {channel} {row} double pressed")
 
     @Slot(int, int)
     def pad_released(self, channel, row):
