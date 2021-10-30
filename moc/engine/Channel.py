@@ -71,3 +71,9 @@ class Channel(QObject):
     def set_position(self, position):
         self.position = position
         self.position_changed.emit(self, position)
+
+    def is_pattern_empty(self, pattern_index):
+        return self.patterns[pattern_index].length == 0
+
+    def is_pattern_armed(self, pattern_index):
+        return self.patterns[pattern_index].armed

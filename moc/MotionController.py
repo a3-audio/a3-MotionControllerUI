@@ -30,11 +30,21 @@ from moc.engine.MotionRecorder import *
 from moc.engine.MotionPlayer import *
 from moc.engine.OscSender import *
 
+# led_color_empty = [0, 0, 0]
+# led_color_idle = [30, 30, 30]
+# led_color_recording = [100, 0, 0]
+# led_color_recording_alt = [50, 40, 40]
+# led_color_playback = [0, 40, 0]
+# led_color_selected = [40, 40, 40]
+# led_color_playback_selected = [10, 40, 10]
 led_color_empty = [0, 0, 0]
-led_color_idle = [30, 30, 30]
-led_color_recording = [100, 0, 0]
-led_color_recording_alt = [50, 40, 40]
-led_color_playback = [0, 40, 0]
+led_color_idle = [80, 80, 80]
+led_color_recording = [255, 0, 0]
+led_color_recording_alt = [255, 100, 100]
+led_color_playback = [0, 255, 0]
+led_color_selected = [150, 150, 150]
+led_color_playback_selected = [100, 255, 100]
+
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
@@ -257,23 +267,28 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 # default: empty pattern slot
                 color = led_color_empty
 
-                # armed patterns
-                if [channel.index, row] in self.pressed_pad_indices().tolist():
-                    # before recording light up constantly
-                    if not self.recorder.is_recording():
-                        color = led_color_recording
-                    # while recording blink armed patterns
-                    else:
+                # if pattern is armed light up red
+                # and blink during record
+                if channel.is_pattern_armed(row):
+                    if self.recorder.is_recording():
                         color = (led_color_recording
                                  if measure.beat % 2 else
                                  led_color_recording_alt)
+                    else:
+                        color = led_color_recording
+                # otherwise light up as selected if pressed
+                elif [channel.index, row] in self.pressed_pad_indices().tolist():
+                    if self.player.is_pattern_playing(channel, row):
+                        color = led_color_playback_selected
+                    else:
+                        color = led_color_selected
 
                 # pattern is playing
                 elif self.player.is_pattern_playing(channel, row):
                     color = led_color_playback
 
                 # pattern is not empty
-                elif channel.patterns[row].length != 0:
+                elif not channel.is_pattern_empty(row):
                     color = led_color_idle
 
                 # emit signal if cached state differs
