@@ -34,7 +34,7 @@ led_color_empty = [0, 0, 0]
 led_color_idle = [40, 40, 40]
 led_color_recording = [100, 0, 0]
 led_color_recording_alt = [100, 40, 40]
-led_color_playback = [100, 100, 100]
+led_color_playback = [0, 100, 0]
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
