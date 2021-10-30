@@ -22,7 +22,7 @@ from PySide6.QtCore import QObject, Signal
 from moc.engine.TempoClock import *
 
 class MotionRecorder(QObject):
-    recording_state = Signal(bool)
+    recording_active = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -30,7 +30,7 @@ class MotionRecorder(QObject):
         self.channels = []
         self.prepared = False
         self.recording = False
-        self.measure_start = TempoClock.Measure()
+        self.measure_trigger = TempoClock.Measure()
 
     def set_channels(self, channels):
         self.channels = channels
@@ -40,9 +40,8 @@ class MotionRecorder(QObject):
         self.prepared = True
 
     def stop_recording(self):
-        print("recording stopped")
         self.recording = False
-        self.recording_state.emit(False)
+        self.recording_active.emit(False)
         self.prepared = False
 
     def is_recording(self):
@@ -51,8 +50,7 @@ class MotionRecorder(QObject):
     def record_tick(self, measure, position):
         if self.prepared and measure.tick_global() == self.measure_start.tick_global():
             self.recording = True
-            self.recording_state.emit(True)
-            print("recording started")
+            self.recording_active.emit(True)
 
         if self.recording:
             for channel in self.channels:

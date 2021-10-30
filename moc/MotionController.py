@@ -88,7 +88,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.clock.tick.connect(self.record_playback_tick)
         self.clock.beat.connect(self.update_pad_leds)
 
-        self.recorder.recording_state.connect(self.recording_state_changed)
+        self.recorder.recording_active.connect(self.recording_active_changed)
 
     def set_channels(self, channels):
         self.channels = channels
@@ -161,7 +161,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
-    def recording_state_changed(self, recording):
+    def recording_active_changed(self, recording_active):
+        print(f"recording: {recording_active}")
         self.update_pad_leds()
 
     def channel_position_changed(self, channel, pos):
