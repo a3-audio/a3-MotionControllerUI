@@ -32,9 +32,9 @@ from moc.engine.OscSender import *
 
 led_color_empty = [0, 0, 0]
 led_color_idle = [40, 40, 40]
-led_color_recording = [80, 0, 0]
-led_color_recording_alt = [0, 40, 0]
-led_color_playback = [0, 40, 0]
+led_color_recording = [50, 0, 0]
+led_color_recording_alt = [50, 40, 40]
+led_color_playback = [0, 100, 0]
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     """Main component for the motion controller logic.
