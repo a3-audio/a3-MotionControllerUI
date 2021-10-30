@@ -271,6 +271,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 elif pattern.length != 0:
                     color = led_color_idle
 
+                # emit signal if cached state differs
                 if (color != self.ui_state.leds[row, channel]).any():
                     self.pad_led.emit(channel, row, color)
                     self.ui_state.leds[row, channel] = color
