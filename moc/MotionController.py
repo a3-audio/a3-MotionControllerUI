@@ -151,12 +151,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             pattern_index=index[1]
             self.player.prepare_play_pattern(channel, pattern_index, measure)
 
-    def prepare_stop_pressed_patterns(self):
-        stop_indices = self.pressed_pad_indices()
-        for index in stop_indices:
-            channel = self.channels[index[0]]
-            self.player.prepare_play_stop(channel, self.clock.measure.next_downbeat())
-            
     def disarm_all_patterns(self):
         for channel in range(4):
             for pattern in range(4):
@@ -249,11 +243,16 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         if not self.channels[channel].is_pattern_empty(row):
             self.player.prepare_play_pattern(self.channels[channel], row, self.clock.measure.next_downbeat())
         self.update_pad_leds()
-        # self.prepare_stop_pressed_patterns()
 
     @Slot(int, int)
     def pad_double_pressed(self, channel, row):
-        print(f"pad {channel} {row} double pressed")
+        # print(f"pad {channel} {row} double pressed")
+        if not self.channels[channel].is_pattern_empty(row):
+            if self.player.is_pattern_playing(self.channels[channel], row):
+                self.player.stop_channel(self.channels[channel])
+            else:
+                self.player.play_pattern(self.channels[channel], row)
+            self.update_pad_leds()
 
     @Slot(int, int)
     def pad_released(self, channel, row):

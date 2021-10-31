@@ -37,6 +37,9 @@ class MotionPlayer(QObject):
         for channel in channels:
             self.playback_states[channel] = MotionPlayer.PlaybackState()
 
+    def play_pattern(self, channel, pattern_index):
+        self.playback_states[channel].playing_pattern = channel.patterns[pattern_index]
+
     def prepare_play_pattern(self, channel, pattern_index, measure):
         self.playback_states[channel].prepared_pattern = channel.patterns[pattern_index]
         self.playback_states[channel].measure_trigger = measure
@@ -63,3 +66,7 @@ class MotionPlayer(QObject):
         pattern = state.playing_pattern
         tick = pattern.tick_in_pattern_relative(measure, state.measure_trigger)
         return pattern.ticks[tick]
+
+    def stop_channel(self, channel):
+        self.playback_states[channel].playing_pattern = None
+        self.playback_states[channel].prepared_pattern = None
