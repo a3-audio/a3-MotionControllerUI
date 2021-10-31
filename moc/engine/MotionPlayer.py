@@ -26,6 +26,7 @@ class MotionPlayer(QObject):
         prepared_pattern: Pattern = None
         playing_pattern: Pattern = None
         measure_trigger: TempoClock.Measure = None
+        measure_start: TempoClock.Measure = None
 
     def __init__(self):
         super().__init__()
@@ -41,8 +42,9 @@ class MotionPlayer(QObject):
         self.playback_states[channel].playing_pattern = channel.patterns[pattern_index]
 
     def prepare_play_pattern(self, channel, pattern_index, measure):
-        self.playback_states[channel].prepared_pattern = channel.patterns[pattern_index]
-        self.playback_states[channel].measure_trigger = measure
+        if not self.playback_states[channel].prepared_pattern is channel.patterns[pattern_index]:
+            self.playback_states[channel].prepared_pattern = channel.patterns[pattern_index]
+            self.playback_states[channel].measure_trigger = measure
 
     def is_pattern_prepared(self, channel, pattern_index):
         return self.playback_states[channel].prepared_pattern is channel.patterns[pattern_index]
@@ -57,6 +59,8 @@ class MotionPlayer(QObject):
                measure.tick_global() == state.measure_trigger.tick_global():
                 state.playing_pattern = state.prepared_pattern
                 state.prepared_pattern = None
+                state.measure_start = state.measure_trigger
+                state.measure_trigger = None
             if state.playing_pattern is not None:
                 position = self.get_playback_position(channel, measure)
                 channel.set_position(position)
@@ -64,7 +68,7 @@ class MotionPlayer(QObject):
     def get_playback_position(self, channel, measure):
         state = self.playback_states[channel]
         pattern = state.playing_pattern
-        tick = pattern.tick_in_pattern_relative(measure, state.measure_trigger)
+        tick = pattern.tick_in_pattern_relative(measure, state.measure_start)
         return pattern.ticks[tick]
 
     def stop_channel(self, channel):
