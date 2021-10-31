@@ -33,17 +33,17 @@ from moc.engine.OscSender import *
 # led_color_empty = [0, 0, 0]
 # led_color_idle = [30, 30, 30]
 # led_color_recording = [100, 0, 0]
-# led_color_recording_alt = [50, 40, 40]
+# led_color_recording_light = [50, 40, 40]
 # led_color_playback = [0, 40, 0]
+# led_color_playback_light = [10, 40, 10]
 # led_color_selected = [40, 40, 40]
-# led_color_playback_selected = [10, 40, 10]
 led_color_empty = [0, 0, 0]
 led_color_idle = [80, 80, 80]
 led_color_recording = [255, 0, 0]
-led_color_recording_alt = [255, 100, 100]
+led_color_recording_light = [255, 100, 100]
 led_color_playback = [0, 255, 0]
+led_color_playback_light = [100, 255, 100]
 led_color_selected = [150, 150, 150]
-led_color_playback_selected = [100, 255, 100]
 
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
@@ -275,14 +275,14 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                     if self.recorder.is_recording():
                         color = (led_color_recording if measure.beat % 2 == 0
                                  else led_color_playback if self.player.is_pattern_playing(channel, row)
-                                 else led_color_recording_alt)
+                                 else led_color_recording_light)
                     else:
-                        color = led_color_recording_alt
+                        color = led_color_recording_light
                 # otherwise light up as selected if pressed,
                 # depending on playback state
                 elif [channel.index, row] in self.pressed_pad_indices().tolist():
                     if self.player.is_pattern_playing(channel, row):
-                        color = led_color_playback_selected
+                        color = led_color_playback_light
                     else:
                         color = led_color_selected
 
