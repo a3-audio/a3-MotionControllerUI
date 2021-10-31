@@ -267,15 +267,15 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 # default: empty pattern slot
                 color = led_color_empty
 
-                # if pattern is armed light up red
-                # and blink during record
+                # if pattern is armed light up red and blink during record
+                # depending on wether pattern is playing simultaneously
                 if channel.is_pattern_armed(row):
                     if self.recorder.is_recording():
-                        color = (led_color_recording
-                                 if measure.beat % 2 else
-                                 led_color_recording_alt)
+                        color = (led_color_recording if measure.beat % 2 == 0
+                                 else led_color_playback if self.player.is_pattern_playing(channel, row)
+                                 else led_color_recording_alt)
                     else:
-                        color = led_color_recording
+                        color = led_color_recording_alt
                 # otherwise light up as selected if pressed,
                 # depending on playback state
                 elif [channel.index, row] in self.pressed_pad_indices().tolist():
