@@ -55,7 +55,7 @@ class TempoClock(QObject):
     def __init__(self):
         super().__init__()
 
-        self.bpm = 120
+        self.bpm = 90
         self.measure = TempoClock.Measure(0, 0, 0, 0)
 
         self.timer = QTimer()
