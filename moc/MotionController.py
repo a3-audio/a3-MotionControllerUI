@@ -30,22 +30,22 @@ from moc.engine.MotionRecorder import *
 from moc.engine.MotionPlayer import *
 from moc.engine.OscSender import *
 
-# led_color_empty = [0, 0, 0]
-# led_color_idle = [30, 30, 30]
-# led_color_recording = [100, 0, 0]
-# led_color_recording_light = [50, 40, 40]
-# led_color_playback = [0, 40, 0]
-# led_color_playback_light = [10, 40, 10]
-# led_color_playback_dark = [0, 20, 0]
-# led_color_selected = [40, 40, 40]
 led_color_empty = [0, 0, 0]
-led_color_idle = [80, 80, 80]
-led_color_recording = [255, 0, 0]
-led_color_recording_light = [255, 100, 100]
-led_color_playback = [0, 255, 0]
-led_color_playback_light = [100, 255, 100]
-led_color_playback_dark = [0, 100, 0]
-led_color_selected = [150, 150, 150]
+led_color_idle = [30, 30, 30]
+led_color_recording = [100, 0, 0]
+led_color_recording_light = [50, 40, 40]
+led_color_playback = [0, 40, 0]
+led_color_playback_light = [10, 40, 10]
+led_color_playback_dark = [0, 20, 0]
+led_color_selected = [40, 40, 40]
+# led_color_empty = [0, 0, 0]
+# led_color_idle = [80, 80, 80]
+# led_color_recording = [255, 0, 0]
+# led_color_recording_light = [255, 100, 100]
+# led_color_playback = [0, 255, 0]
+# led_color_playback_light = [100, 255, 100]
+# led_color_playback_dark = [0, 100, 0]
+# led_color_selected = [150, 150, 150]
 
 
 class MotionController(QtOpenGLWidgets.QOpenGLWidget):
