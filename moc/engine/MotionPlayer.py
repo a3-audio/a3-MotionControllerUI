@@ -41,6 +41,9 @@ class MotionPlayer(QObject):
         self.playback_states[channel].prepared_pattern = channel.patterns[pattern_index]
         self.playback_states[channel].measure_trigger = measure
 
+    def is_pattern_prepared(self, channel, pattern_index):
+        return self.playback_states[channel].prepared_pattern is channel.patterns[pattern_index]
+
     def is_pattern_playing(self, channel, pattern_index):
         return self.playback_states[channel].playing_pattern is channel.patterns[pattern_index]
 
