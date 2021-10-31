@@ -244,6 +244,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         if self.detect_double_press_pads(channel, row):
             return
         self.ui_state.pads[channel][row] = True
+        if not self.channels[channel].is_pattern_empty(row):
+            self.player.prepare_play_pattern(self.channels[channel], row, self.clock.measure.next_downbeat())
         self.update_pad_leds()
         # self.prepare_stop_pressed_patterns()
 
