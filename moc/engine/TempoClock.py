@@ -55,7 +55,7 @@ class TempoClock(QObject):
     def __init__(self):
         super().__init__()
 
-        self.bpm = 120
+        self.bpm = 90
         self.measure = TempoClock.Measure(0, 0, 0, 0)
 
         self.timer = QTimer()
@@ -90,6 +90,7 @@ class TempoClock(QObject):
 
     def count_tick(self):
         self.measure.tick += 1
+        self.tick.emit(dataclasses.replace(self.measure))
         if self.measure.tick == TempoClock.TICKS_PER_BEAT:
             self.measure.tick = 0
             self.measure.beat += 1
@@ -98,4 +99,3 @@ class TempoClock(QObject):
                 self.measure.bar += 1
                 self.bar.emit(dataclasses.replace(self.measure))
             self.beat.emit(dataclasses.replace(self.measure))
-        self.tick.emit(dataclasses.replace(self.measure))

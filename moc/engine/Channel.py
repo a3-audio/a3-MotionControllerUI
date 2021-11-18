@@ -49,8 +49,8 @@ class PlaybackParams:
 class RecordParams:
     length: int = 8
 
-class Track(QObject):
-    # track object, position tuple
+class Channel(QObject):
+    # channel object, position tuple
     position_changed = Signal(object, object)
 
     def __init__(self, index):
@@ -64,10 +64,16 @@ class Track(QObject):
 
         self.position = None
 
-        # for now each track owns 4 patterns that are one-to-one
+        # for now each channel owns 4 patterns that are one-to-one
         # mapped to the pads. this is probably subject to change.
         self.patterns = [Pattern() for _ in range(4)]
 
     def set_position(self, position):
         self.position = position
         self.position_changed.emit(self, position)
+
+    def is_pattern_empty(self, pattern_index):
+        return self.patterns[pattern_index].length == 0
+
+    def is_pattern_armed(self, pattern_index):
+        return self.patterns[pattern_index].armed

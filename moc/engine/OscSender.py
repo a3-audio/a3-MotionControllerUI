@@ -22,15 +22,15 @@ from pythonosc import udp_client
 from PySide6.QtCore import QPointF
 
 class OscSender:
-    def __init__(self, num_tracks, ip, port, encoder_base_port):
+    def __init__(self, num_channels, ip, port, encoder_base_port):
         self.client = udp_client.SimpleUDPClient(ip, port)
         self.encoder_clients = []
-        for t in range(num_tracks):
+        for t in range(num_channels):
             self.encoder_clients.append(udp_client.SimpleUDPClient(ip, encoder_base_port + t))
 
-    def track_position_changed(self, track, pos):
+    def channel_position_changed(self, channel, pos):
         if pos != None:
-            self.send_azimuth_elevation(track.index, pos)
+            self.send_azimuth_elevation(channel.index, pos)
 
     def send_azimuth_elevation(self, index, pos):
         clamped_pos = QPointF(pos)
