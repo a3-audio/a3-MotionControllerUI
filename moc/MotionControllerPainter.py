@@ -130,6 +130,10 @@ class MotionControllerPainter:
 
     def draw_center_region(self, painter, region):
         painter.setBrush(QtCore.Qt.black)
+        if self.moc.channels:
+            for index, channel in enumerate(self.moc.channels):
+                if channel.is_armed():
+                    painter.setBrush(self.channel_colors[index].darker(f=300))
         painter.drawRect(region)
 
         center_region = QRectF(region)
