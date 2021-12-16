@@ -68,7 +68,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
 
     @dataclass
     class UIState:
-        mouse_pos: QPointF = QPointF(0, 0)
+        touch_pos: QPointF = QPointF(0, 0)
         pads: np.array = np.zeros((4, 4), dtype=bool)
         leds: np.array = np.full((4, 4, 3), led_color_idle)
 
@@ -89,7 +89,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.clear_press_times_encoder()
         self.clear_press_times_pads()
 
-        self.mouse_pos = (0, 0)
+        self.touch_pos = (0, 0)
 
         self.moc_painter = MotionControllerPainter(self)
 
@@ -121,7 +121,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.moc_painter.paintGL()
 
     def mousePressEvent(self, event):
-        self.ui_state.mouse_pos = QPointF(event.x(), event.y())
+        self.ui_state.touch_pos = QPointF(event.x(), event.y())
         if self.moc_painter.center_region_contains(event.pos()):
             if not self.recorder.is_recording() and self.any_pad_pressed():
                 self.arm_pressed_patterns()
@@ -134,7 +134,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             self.disarm_all_patterns()
 
     def mouseMoveEvent(self, event):
-        self.ui_state.mouse_pos = QPointF(event.x(), event.y())
+        self.ui_state.touch_pos = QPointF(event.x(), event.y())
         self.repaint()
 
     def arm_pressed_patterns(self):
@@ -163,7 +163,7 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         return np.sum(self.ui_state.pads)
 
     def record_playback_tick(self, measure):
-        normalized_pos = self.moc_painter.normalized_mouse_pos(self.ui_state.mouse_pos)
+        normalized_pos = self.moc_painter.touch_pos_normalized(self.ui_state.touch_pos)
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
 
