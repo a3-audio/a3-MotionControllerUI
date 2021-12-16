@@ -263,7 +263,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
     def update_pad_leds(self, measure=None):
         if not measure:
             measure = self.clock.measure
-        print(measure)
 
         for channel in self.channels:
             for row in range(4):
