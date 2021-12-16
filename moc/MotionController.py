@@ -100,8 +100,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.clock.tick.connect(self.record_playback_tick)
         self.clock.beat.connect(self.update_pad_leds)
 
-        self.recorder.recording_active.connect(self.recording_active_changed)
-
     def set_channels(self, channels):
         self.channels = channels
         self.moc_painter.set_channels(channels)
@@ -128,6 +126,14 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 self.recorder.prepare_recording(self.clock.measure.next_downbeat())
                 self.prepare_play_pressed_patterns(self.clock.measure.next_downbeat())
 
+        footer_region_index = self.moc_painter.footer_region_contains(event.pos())
+        if footer_region_index is not None:
+            for index, channel in enumerate(self.channels):
+                # arm channel and disarm others, or disarm if already armed
+                channel.set_armed(index == footer_region_index and
+                                  not channel.is_armed())
+            self.repaint()
+
     def mouseReleaseEvent(self, event):
         if self.recorder.is_recording():
             self.recorder.stop_recording()
@@ -137,24 +143,12 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         self.ui_state.touch_pos = QPointF(event.x(), event.y())
         self.repaint()
 
-    def arm_pressed_patterns(self):
-        arm_indices = self.pressed_pad_indices()
-        for index in arm_indices:
-            channel = self.channels[index[0]]
-            channel.patterns[index[1]].arm(channel.record_params.length)
-            print(f"armed pattern {index[0]}.{index[1]}")
-
     def prepare_play_pressed_patterns(self, measure):
         play_indices = self.pressed_pad_indices()
         for index in play_indices:
             channel = self.channels[index[0]]
             pattern_index=index[1]
             self.player.prepare_play_pattern(channel, pattern_index, measure)
-
-    def disarm_all_patterns(self):
-        for channel in range(4):
-            for pattern in range(4):
-                self.channels[channel].patterns[pattern].disarm()
 
     def pressed_pad_indices(self):
         return np.argwhere(self.ui_state.pads == True)
@@ -166,10 +160,6 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         normalized_pos = self.moc_painter.touch_pos_normalized(self.ui_state.touch_pos)
         self.recorder.record_tick(measure, normalized_pos)
         self.player.playback_tick(measure)
-
-    def recording_active_changed(self, recording_active):
-        print(f"recording: {recording_active}")
-        self.update_pad_leds()
 
     def channel_position_changed(self, channel, pos):
         self.repaint()
@@ -269,18 +259,8 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
                 # default: empty pattern slot
                 color = led_color_empty
 
-                # if pattern is armed light up red and blink during record
-                # depending on wether pattern is playing simultaneously
-                if channel.is_pattern_armed(row):
-                    if self.recorder.is_recording():
-                        color = (led_color_recording if measure.beat % 2 == 0
-                                 else led_color_playback if self.player.is_pattern_playing(channel, row)
-                                 else led_color_recording_light)
-                    else:
-                        color = led_color_recording_light
-                # otherwise light up as selected if pressed,
-                # depending on playback state
-                elif [channel.index, row] in self.pressed_pad_indices().tolist():
+                # light up as selected if pressed, depending on playback state
+                if [channel.index, row] in self.pressed_pad_indices().tolist():
                     if self.player.is_pattern_playing(channel, row):
                         color = led_color_playback_light
                     else:

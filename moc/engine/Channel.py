@@ -48,6 +48,7 @@ class PlaybackParams:
 @dataclass
 class RecordParams:
     length: int = 8
+    armed: bool = False
 
 class Channel(QObject):
     # channel object, position tuple
@@ -62,6 +63,8 @@ class Channel(QObject):
         self.playback_params = PlaybackParams()
         self.record_params = RecordParams()
 
+        self.recording_buffer = Pattern()
+
         self.position = None
 
         # for now each channel owns 4 patterns that are one-to-one
@@ -75,5 +78,8 @@ class Channel(QObject):
     def is_pattern_empty(self, pattern_index):
         return self.patterns[pattern_index].length == 0
 
-    def is_pattern_armed(self, pattern_index):
-        return self.patterns[pattern_index].armed
+    def set_armed(self, armed):
+        self.record_params.armed = armed
+
+    def is_armed(self):
+        return self.record_params.armed

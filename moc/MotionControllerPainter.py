@@ -52,6 +52,7 @@ class MotionControllerPainter:
 
         self.svg_render_orientation = QSvgRenderer("resources/orientation.svg")
 
+
     def set_channels(self, channels):
         self.channels = channels
         self.channel_colors = []
@@ -60,6 +61,7 @@ class MotionControllerPainter:
             color = QColor()
             color.setHsl(int(255/num_channels*t), 100, 150)
             self.channel_colors.append(color);
+
 
     def abs_to_rel(self, x, y):
         return (x / self.moc.width(), y / self.moc.height())
@@ -70,6 +72,7 @@ class MotionControllerPainter:
     def rel_to_abs_height(self, y):
         return y * self.moc.height()
 
+
     def azimuth_to_deg(self, azimuth):
         return (90-azimuth)
     def azimuth_to_rad(self, azimuth):
@@ -79,22 +82,25 @@ class MotionControllerPainter:
         y = -math.sin(angle) * self.draw_params_dynamic['circle_radius']
         return QPoint(x, y)
 
+
     def paintGL(self):
         gl = self.context.functions()
         gl.glClearColor(0, 0.05, 0.1, 1)
         gl.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.draw_params_dynamic = {
-            'left_padding' : self.rel_to_abs_width(self.draw_params['text_padding_rel_w']),
-            'top_padding' : self.rel_to_abs_height(self.draw_params['text_padding_rel_h']),
+            'padding_left' : self.rel_to_abs_width(self.draw_params['text_padding_rel_w']),
+            'padding_top' : self.rel_to_abs_height(self.draw_params['text_padding_rel_h']),
             'line_spacing' : self.rel_to_abs_height(self.draw_params['line_spacing_rel_h']),
-            'header_height' : self.rel_to_abs_height(self.draw_params['channel_top_height_rel']),
-            'footer_height' : self.rel_to_abs_height(self.draw_params['channel_bottom_height_rel']),
+            'height_header' : self.rel_to_abs_height(self.draw_params['channel_top_height_rel']),
+            'height_footer' : self.rel_to_abs_height(self.draw_params['channel_bottom_height_rel']),
         }
 
         painter = QtGui.QPainter(self.moc)
         painter.setFont(QtGui.QFont('monospace', self.moc.height() * self.draw_params['font_scale']))
 
+        # store footer regions in a list to detect presses
+        self.draw_params_dynamic['regions_footer'] = []
         if self.moc.channels:
             num_channels = len(self.moc.channels)
             for t in range(num_channels):
@@ -102,19 +108,24 @@ class MotionControllerPainter:
                 column_region = QRectF(t*channel_width, 0, channel_width, self.moc.height())
 
                 header_region = QRectF(column_region)
-                header_region.setHeight(self.draw_params_dynamic['header_height'])
+                header_region.setHeight(self.draw_params_dynamic['height_header'])
                 self.draw_channel_header(painter, header_region, self.channel_colors[t], self.moc.channels[t])
 
                 footer_region = QRectF(column_region)
                 footer_region.setBottom(self.moc.height())
-                footer_region.setTop(self.moc.height() - self.draw_params_dynamic['footer_height'])
+                footer_region.setTop(self.moc.height() - self.draw_params_dynamic['height_footer'])
+                self.draw_params_dynamic['regions_footer'].append(footer_region)
                 self.draw_channel_footer(painter, footer_region, self.channel_colors[t], self.moc.channels[t])
 
         region = self.moc.rect()
-        region.adjust(0, self.draw_params_dynamic['header_height'],
-                      0, -self.draw_params_dynamic['footer_height'])
-        self.draw_params_dynamic['region_center'] = region
-        self.draw_center_region(painter, region)
+        region_center = region.adjusted(0, self.draw_params_dynamic['height_header'],
+                                        0, -self.draw_params_dynamic['height_footer'])
+        self.draw_params_dynamic['region_center'] = region_center
+        self.draw_center_region(painter, region_center)
+
+        # region_footer = region.adjusted(0, self.draw_params_dynamic['height_header'] + region_center.height(), 0, 0)
+        # self.draw_params_dynamic['regions_footer'] = region_footer
+
 
     def draw_center_region(self, painter, region):
         painter.setBrush(QtCore.Qt.black)
@@ -133,12 +144,13 @@ class MotionControllerPainter:
         orientation_region.moveCenter(region.center())
         self.svg_render_orientation.render(painter, orientation_region)
 
-        self.draw_params_dynamic['circle_region'] = orientation_region
+        self.draw_params_dynamic['region_circle'] = orientation_region
         self.draw_params_dynamic['circle_radius'] = orientation_size / 2
 
         if self.moc.channels:
             for t in range(len(self.moc.channels)):
                 self.draw_channel_center(painter, center_region, self.channel_colors[t], self.moc.channels[t])
+
 
     def draw_channel_header(self, painter, region, color, channel):
         painter.setBrush(QtGui.QBrush(color))
@@ -148,8 +160,8 @@ class MotionControllerPainter:
         painter.setPen(QtCore.Qt.black)
 
         text_region = QRectF(region)
-        text_region.adjust(self.draw_params_dynamic['left_padding'],
-                           self.draw_params_dynamic['top_padding'], 0, 0)
+        text_region.adjust(self.draw_params_dynamic['padding_left'],
+                           self.draw_params_dynamic['padding_top'], 0, 0)
 
         ambi_mode_string = channel.ambi_params.mode.name
         painter.drawText(text_region, "Mode: " + ambi_mode_string)
@@ -162,23 +174,25 @@ class MotionControllerPainter:
         side_string = f'Side: {channel.ambi_params.side:.1f}dB'
         painter.drawText(text_region, side_string)
 
+
     def draw_channel_footer(self, painter, region, color, channel):
         painter.setBrush(QtGui.QBrush(color))
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(self.pen_outlines if channel.is_armed() else QtCore.Qt.NoPen)
         painter.drawRect(region)
 
         # set pen for text drawing
         painter.setPen(QtCore.Qt.black)
 
         text_region = QRectF(region)
-        text_region.adjust(self.draw_params_dynamic['left_padding'],
-                           self.draw_params_dynamic['top_padding'], 0, 0)
+        text_region.adjust(self.draw_params_dynamic['padding_left'],
+                           self.draw_params_dynamic['padding_top'], 0, 0)
 
         painter.drawText(text_region, "Length: " + str(channel.record_params.length))
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
         playback_mode_string = channel.playback_params.mode.name
         painter.drawText(text_region, "Loop: " + playback_mode_string)
+
 
     def draw_channel_center(self, painter, region, color, channel):
         marker_size = self.draw_params['marker_size_rel'] * region.width()
@@ -190,7 +204,7 @@ class MotionControllerPainter:
         # pen.setWidth(marker_size / 3)
         # pen.setBrush(color)
         # painter.setPen(pen)
-        # painter.drawArc(self.draw_params_dynamic['circle_region'], start_angle, span_angle)
+        # painter.drawArc(self.draw_params_dynamic['region_circle'], start_angle, span_angle)
 
         #        marker_angle = self.azimuth_to_rad(channel.ambi_params.azimuth)
         #        marker_position = region.center() + self.angle_to_position(marker_angle)
@@ -206,19 +220,27 @@ class MotionControllerPainter:
             painter.setPen(QtCore.Qt.NoPen)
             painter.drawEllipse(marker_region)
 
+
     def center_region_contains(self, pos):
         region_center = self.draw_params_dynamic['region_center']
         return region_center.contains(pos)
 
+    def footer_region_contains(self, pos):
+        for index, region in enumerate(self.draw_params_dynamic['regions_footer']):
+            if region.contains(pos):
+                return index
+        return None
+
     def touch_pos_normalized(self, pos):
-        region = self.draw_params_dynamic['circle_region']
+        region = self.draw_params_dynamic['region_circle']
         p = pos - region.center()
         p.setX(p.x() * 2.0 / region.width())
         p.setY(p.y() * 2.0 / region.height())
         return QPointF(p.x(), -p.y())
 
+
     def touch_pos_raw(self, pos):
-        region = self.draw_params_dynamic['circle_region']
+        region = self.draw_params_dynamic['region_circle']
         p = QPointF(pos)
         p.setX(p.x() * region.width() / 2.0)
         p.setY(-p.y() * region.height() / 2.0)
