@@ -56,10 +56,11 @@ class MotionControllerPainter:
     def set_channels(self, channels):
         self.channels = channels
         self.channel_colors = []
+        hue_shift = 0
         num_channels = len(self.moc.channels)
         for t in range(num_channels):
             color = QColor()
-            color.setHsl(int(255/num_channels*t), 100, 150)
+            color.setHsl(int(255/num_channels*t + hue_shift)%256, 100, 150)
             self.channel_colors.append(color);
 
 
