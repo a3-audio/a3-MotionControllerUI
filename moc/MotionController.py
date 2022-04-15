@@ -185,9 +185,9 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
             self.osc_sender.send_width(channel, value)
         if row == 1:
             # TODO: same here
-            val = np.interp(value, [0, 1], [-69, 0])
-            self.channels[channel].ambi_params.side = val
-            self.osc_sender.send_side(channel, val)
+            reverb = np.interp(value, [0, 1], [-69, 0])
+            self.channels[channel].ambi_params.side = reverb
+            self.osc_sender.send_side(channel, value)
         self.repaint()
 
     def clear_press_times_encoder(self):
