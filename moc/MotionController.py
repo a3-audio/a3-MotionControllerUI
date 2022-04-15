@@ -180,14 +180,14 @@ class MotionController(QtOpenGLWidgets.QOpenGLWidget):
         if row == 0:
             # TODO: this mapping should happen at a central location, see
             # https://github.com/ambisonic-audio-adventures/Ambijockey/issues/5
-            width = np.interp(value, [0,1], [30,145])
+            width = np.interp(value, [0,1], [0,180])
             self.channels[channel].ambi_params.width = width
             self.osc_sender.send_width(channel, value)
         if row == 1:
             # TODO: same here
-            side = value * 6
-            self.channels[channel].ambi_params.side = side
-            self.osc_sender.send_side(channel, value)
+            val = np.interp(value, [0, 1], [-69, 0])
+            self.channels[channel].ambi_params.side = val
+            self.osc_sender.send_side(channel, val)
         self.repaint()
 
     def clear_press_times_encoder(self):

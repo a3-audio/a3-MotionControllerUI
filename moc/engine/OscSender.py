@@ -53,9 +53,7 @@ class OscSender:
         self.encoder_clients[index].send_message("/StereoEncoder/elevation", elevation)
 
     def send_width(self, index, width):
-        # osc message channel indices are 1-indexed
         self.client.send_message(f"/channel/{index}/width", width)
 
     def send_side(self, index, side):
-        # osc message channel indices are 1-indexed
         self.client.send_message(f"/channel/{index}/reverb", side)

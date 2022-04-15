@@ -159,7 +159,7 @@ class MotionControllerPainter:
         painter.drawText(text_region, width_string)
 
         text_region.adjust(0, self.draw_params_dynamic['line_spacing'], 0, 0)
-        side_string = f'Side: {channel.ambi_params.side:.1f}dB'
+        side_string = f'FX: {channel.ambi_params.side:.1f}dB'
         painter.drawText(text_region, side_string)
 
     def draw_channel_footer(self, painter, region, color, channel):
