@@ -24,8 +24,8 @@ class OscSender:
         self.client = udp_client.SimpleUDPClient(ip, port)
         self.encoder_clients = []
         for t in range(num_channels):
-#            self.encoder_clients.append(udp_client.SimpleUDPClient(ip, encoder_base_port + t))
-            self.encoder_clients.append(udp_client.SimpleUDPClient(ip, 9000))
+            #self.encoder_clients.append(udp_client.SimpleUDPClient(ip, encoder_base_port + t))
+            self.encoder_clients.append(udp_client.SimpleUDPClient(ip, port))
 
     def channel_position_changed(self, channel, pos):
         if pos != None:
